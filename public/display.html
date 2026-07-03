@@ -537,7 +537,11 @@ function flash() {
   nowCard.classList.add('flash');
 }
 
+const parts = window.location.pathname.split('/').filter(Boolean);
+const ROOM_CODE = (parts[0] === 'r' ? parts[1] : 'LOCAL')?.toUpperCase() || 'LOCAL';
+
 const socket = io();
+socket.emit('join-room', ROOM_CODE);
 
 socket.on('connect', () => {
   connStatus.textContent = 'Live';

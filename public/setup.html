@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TokenQ — Clinic Setup</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #f1f5f9;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .logo { font-size: 42px; margin-bottom: 8px; }
+    h1 { font-size: 28px; font-weight: 800; color: #fff; }
+    .sub { color: #94a3b8; margin-top: 6px; font-size: 15px; }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 32px;
+      width: 100%;
+      max-width: 440px;
+      margin-top: 32px;
+    }
+    label { display: block; font-size: 13px; color: #94a3b8; margin-bottom: 6px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: 1.5px solid #334155;
+      background: #0f172a;
+      color: #f1f5f9;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: #4ade80; }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      border-radius: 10px;
+      border: none;
+      background: #16a34a;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #15803d; }
+    button:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+
+    /* Result section */
+    #result { display: none; margin-top: 24px; }
+    .clinic-code {
+      text-align: center;
+      font-size: 36px;
+      font-weight: 900;
+      letter-spacing: 6px;
+      color: #4ade80;
+      background: #0f172a;
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 20px;
+    }
+    .link-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+    .link-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      min-width: 64px;
+    }
+    .link-url {
+      flex: 1;
+      font-size: 13px;
+      color: #e2e8f0;
+      word-break: break-all;
+    }
+    .copy-btn {
+      margin: 0;
+      width: auto;
+      padding: 6px 14px;
+      font-size: 13px;
+      border-radius: 6px;
+      background: #334155;
+      color: #e2e8f0;
+      white-space: nowrap;
+    }
+    .copy-btn:hover { background: #475569; }
+    .copy-btn.copied { background: #15803d; color: #fff; }
+
+    .open-btn {
+      display: block;
+      margin-top: 16px;
+      padding: 14px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 15px;
+      border-radius: 10px;
+      background: #4ade80;
+      color: #052e16;
+      text-decoration: none;
+    }
+    .open-btn:hover { background: #22c55e; }
+
+    .note { margin-top: 16px; font-size: 13px; color: #64748b; text-align: center; line-height: 1.6; }
+
+    .demo-link {
+      margin-top: 28px;
+      text-align: center;
+      font-size: 14px;
+      color: #64748b;
+    }
+    .demo-link a { color: #4ade80; text-decoration: none; }
+    .demo-link a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<div style="text-align:center;">
+  <div class="logo">🏥</div>
+  <h1>TokenQ</h1>
+  <p class="sub">Digital queue display for clinics</p>
+</div>
+
+<div class="card">
+  <div id="setup-form">
+    <label for="clinic-name">Clinic Name</label>
+    <input type="text" id="clinic-name" placeholder="e.g. Kerala Health Clinic" maxlength="60" autocomplete="off">
+    <button id="btn-create">Create My Clinic →</button>
+  </div>
+
+  <div id="result">
+    <p style="color:#94a3b8; font-size:13px; margin-bottom:12px;">Your clinic code</p>
+    <div class="clinic-code" id="result-code"></div>
+
+    <div class="link-row">
+      <span class="link-label">📺 TV</span>
+      <span class="link-url" id="link-display"></span>
+      <button class="copy-btn" onclick="copyLink('link-display', this)">Copy</button>
+    </div>
+    <div class="link-row">
+      <span class="link-label">👨‍⚕️ Admin</span>
+      <span class="link-url" id="link-admin"></span>
+      <button class="copy-btn" onclick="copyLink('link-admin', this)">Copy</button>
+    </div>
+    <div class="link-row">
+      <span class="link-label">🧑 Patient</span>
+      <span class="link-url" id="link-patient"></span>
+      <button class="copy-btn" onclick="copyLink('link-patient', this)">Copy</button>
+    </div>
+
+    <a id="open-display" href="#" class="open-btn" target="_blank">Open TV Display →</a>
+    <p class="note">Save these links — share the Admin link with the doctor, Patient link with your check-in tablet.</p>
+  </div>
+</div>
+
+<div class="demo-link">
+  Want to see a demo first? <a href="/r/DEMO" target="_blank">Open Demo Clinic →</a>
+</div>
+
+<script>
+document.getElementById('btn-create').addEventListener('click', async () => {
+  const name = document.getElementById('clinic-name').value.trim();
+  if (!name) { document.getElementById('clinic-name').focus(); return; }
+
+  const btn = document.getElementById('btn-create');
+  btn.disabled = true;
+  btn.textContent = 'Creating…';
+
+  const res  = await fetch('/api/rooms/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ clinicName: name })
+  });
+  const data = await res.json();
+
+  if (data.success) {
+    document.getElementById('result-code').textContent   = data.code;
+    document.getElementById('link-display').textContent  = data.links.display;
+    document.getElementById('link-admin').textContent    = data.links.admin;
+    document.getElementById('link-patient').textContent  = data.links.patient;
+    document.getElementById('open-display').href         = data.links.display;
+    document.getElementById('setup-form').style.display  = 'none';
+    document.getElementById('result').style.display      = 'block';
+  }
+});
+
+document.getElementById('clinic-name').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('btn-create').click();
+});
+
+function copyLink(id, btn) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+</body>
+</html>
