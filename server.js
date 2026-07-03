@@ -91,6 +91,37 @@ function getStatus() {
 
 loadState();
 
+// Seed demo patients when running on Render with an empty queue
+function seedDemoPatients() {
+  if (state.tokens.length > 0) return;
+  const patients = [
+    { name: 'Rajesh Kumar',    nameML: 'രാജേഷ് കുമാർ',      priority: 'normal', status: 'called' },
+    { name: 'Meera Nair',      nameML: 'മീര നായർ',           priority: 'normal', status: 'waiting' },
+    { name: 'Suresh Babu',     nameML: 'സുരേഷ് ബാബു',        priority: 'normal', status: 'waiting' },
+    { name: 'Lakshmi Devi',    nameML: 'ലക്ഷ്മി ദേവി',       priority: 'urgent', status: 'waiting' },
+    { name: 'Mohammed Ansari', nameML: 'മുഹമ്മദ് അൻസാരി',    priority: 'normal', status: 'waiting' },
+    { name: 'Priya Thomas',    nameML: 'പ്രിയ തോമസ്',        priority: 'normal', status: 'waiting' },
+    { name: 'Arun Krishnan',   nameML: 'അരുൺ കൃഷ്ണൻ',       priority: 'normal', status: 'waiting' },
+  ];
+  patients.forEach((p, i) => {
+    state.lastTokenIssued++;
+    state.tokens.push({
+      tokenNumber: state.lastTokenIssued,
+      patientName: p.name,
+      patientNameML: p.nameML,
+      priority: p.priority,
+      status: p.status,
+      createdAt: new Date().toISOString(),
+      calledAt: p.status === 'called' ? new Date().toISOString() : null
+    });
+  });
+  state.currentToken = 1;
+  saveState();
+  console.log('Demo patients seeded');
+}
+
+if (process.env.NODE_ENV === 'production') seedDemoPatients();
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
