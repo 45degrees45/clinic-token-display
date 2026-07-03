@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TokenQ — Clinic Queue System</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+      overflow: hidden;
+      background: #000;
+      user-select: none;
+    }
+
+    .slide {
+      position: absolute;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 80px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+    .slide.active { opacity: 1; pointer-events: all; }
+
+    /* Themes */
+    .s-title    { background: linear-gradient(145deg, #0f2744, #1565c0); color: #fff; }
+    .s-problem  { background: #fff; color: #111; }
+    .s-bridge   { background: linear-gradient(145deg, #fffbeb, #fef3c7); color: #78350f; }
+    .s-solution { background: linear-gradient(145deg, #052e16, #166534); color: #fff; }
+    .s-cost     { background: linear-gradient(145deg, #1e1b4b, #3730a3); color: #fff; }
+    .s-pricing  { background: linear-gradient(145deg, #052e16, #15803d); color: #fff; }
+    .s-demo     { background: linear-gradient(145deg, #0c0a09, #1c1917); color: #fff; }
+
+    /* Photo background slides */
+    .s-photo {
+      color: #fff;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    }
+    .s-photo-1 {
+      background:
+        linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.3) 100%),
+        url('https://images.pexels.com/photos/8459996/pexels-photo-8459996.jpeg?auto=compress&cs=tinysrgb&w=1600') center/cover no-repeat;
+    }
+    .s-photo-2 {
+      background:
+        linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.3) 100%),
+        url('https://images.pexels.com/photos/7659873/pexels-photo-7659873.jpeg?auto=compress&cs=tinysrgb&w=1600') center/cover no-repeat;
+    }
+    .s-photo-3 {
+      background:
+        linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.3) 100%),
+        url('https://images.pexels.com/photos/6627864/pexels-photo-6627864.jpeg?auto=compress&cs=tinysrgb&w=1600') center/cover no-repeat;
+    }
+    .s-photo .tag-red { background: rgba(220,38,38,0.85); color: #fff; }
+    .s-photo em { color: #fde68a; font-style: normal; font-weight: 700; }
+
+    /* Tags */
+    .tag {
+      display: inline-block;
+      padding: 6px 22px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .tag-white  { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
+    .tag-red    { background: #fee2e2; color: #dc2626; }
+    .tag-amber  { background: #fde68a; color: #92400e; }
+    .tag-green  { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
+
+    /* Typography */
+    .big-emoji  { font-size: 100px; line-height: 1; margin-bottom: 28px; }
+    h1          { font-size: 64px; font-weight: 900; line-height: 1.05; margin-bottom: 16px; }
+    h2          { font-size: 44px; font-weight: 800; line-height: 1.15; margin-bottom: 20px; }
+    .lead       { font-size: 26px; line-height: 1.55; opacity: 0.85; max-width: 780px; }
+    .sub        { font-size: 20px; opacity: 0.55; margin-top: 12px; }
+    .ml         { font-size: 22px; opacity: 0.5; margin-top: 10px; font-style: italic; }
+    .highlight  { color: #fbbf24; }
+    .highlight-red { color: #f87171; }
+    .highlight-green { color: #4ade80; }
+
+    /* Problem slide accent */
+    .s-problem .tag-red + .big-emoji { margin-top: 8px; }
+    .s-problem h2 { color: #111; }
+    .s-problem .lead { color: #333; }
+    .s-problem em { color: #dc2626; font-style: normal; font-weight: 700; }
+
+    /* Bigger text on photo slides */
+    .s-photo h2   { font-size: 58px; font-weight: 900; text-shadow: 0 3px 16px rgba(0,0,0,0.6); }
+    .s-photo .lead { font-size: 32px; opacity: 1; text-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+
+    /* Phone screenshots */
+    .phone-row {
+      display: flex;
+      gap: 30px;
+      justify-content: center;
+      align-items: flex-start;
+      margin-top: 20px;
+    }
+    .phone-img {
+      height: 320px;
+      border-radius: 20px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+    }
+
+    /* Steps */
+    .steps {
+      display: flex;
+      gap: 50px;
+      margin-top: 32px;
+      align-items: flex-start;
+      width: 100%;
+      max-width: 900px;
+    }
+    .step { flex: 1; }
+    .step-circle {
+      width: 52px; height: 52px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 800;
+      margin: 0 auto 14px;
+    }
+    .step-emoji { font-size: 52px; margin-bottom: 12px; }
+    .step p { font-size: 19px; opacity: 0.85; line-height: 1.4; }
+
+    /* Cost table */
+    .cost-table {
+      width: 100%;
+      max-width: 720px;
+      margin-top: 28px;
+      border-collapse: collapse;
+    }
+    .cost-table th {
+      padding: 14px 24px;
+      text-align: left;
+      font-size: 15px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background: rgba(255,255,255,0.08);
+      opacity: 0.7;
+    }
+    .cost-table td {
+      padding: 18px 24px;
+      font-size: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .cost-table td:first-child { opacity: 0.8; }
+    .cost-table tr:last-child td { border-bottom: none; }
+
+    /* Pricing box */
+    .price-box {
+      margin-top: 32px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 28px 56px;
+      border-radius: 20px;
+      backdrop-filter: blur(8px);
+    }
+    .price-label { font-size: 18px; opacity: 0.6; margin-bottom: 6px; }
+    .price-value { font-size: 56px; font-weight: 900; color: #4ade80; }
+    .price-note  { font-size: 16px; opacity: 0.5; margin-top: 6px; letter-spacing: 1px; }
+
+    /* Demo URL box */
+    .demo-box {
+      background: #1c1917;
+      border: 1px solid #44403c;
+      border-radius: 16px;
+      padding: 22px 48px;
+      font-size: 28px;
+      font-family: 'Courier New', monospace;
+      margin-top: 28px;
+      letter-spacing: 1px;
+      color: #a3e635;
+    }
+
+    /* Nav dots */
+    .nav {
+      position: fixed;
+      bottom: 22px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      z-index: 200;
+    }
+    .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+    .dot.active { background: rgba(255,255,255,0.85); width: 22px; border-radius: 4px; }
+
+    .slide-counter {
+      position: fixed;
+      bottom: 18px;
+      right: 28px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.3);
+      z-index: 200;
+      font-family: monospace;
+    }
+
+    /* Navigation arrows */
+    .nav-arrow {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 300;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.18);
+      border: 2px solid rgba(255,255,255,0.35);
+      backdrop-filter: blur(6px);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: #fff;
+      transition: background 0.2s, transform 0.2s;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nav-arrow:hover  { background: rgba(255,255,255,0.32); transform: translateY(-50%) scale(1.1); }
+    .nav-arrow:active { transform: translateY(-50%) scale(0.95); }
+    .nav-arrow.hidden { opacity: 0; pointer-events: none; }
+    #btn-prev { left: 18px; }
+    #btn-next { right: 18px; }
+
+    /* Dark background on arrows works on all slide themes */
+    body.light-slide .nav-arrow {
+      background: rgba(0,0,0,0.12);
+      border-color: rgba(0,0,0,0.2);
+      color: #222;
+    }
+    body.light-slide .nav-arrow:hover { background: rgba(0,0,0,0.22); }
+
+    /* Divider rule for bridge slides */
+    .rule {
+      width: 60px;
+      height: 3px;
+      background: currentColor;
+      opacity: 0.3;
+      border-radius: 2px;
+      margin: 24px auto;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── SLIDE 1: Title ── -->
+<div class="slide s-title active">
+  <span class="tag tag-white">Kerala Clinics</span>
+  <h1>TokenQ</h1>
+  <p class="lead">Smart queue management<br>for small clinics</p>
+  <p class="ml">ക്ലിനിക്കിലെ ക്യൂ — ഡിജിറ്റൽ ആയി</p>
+  <p class="sub" style="margin-top:40px;">No monthly fees &nbsp;·&nbsp; One-time setup &nbsp;·&nbsp; Works on any TV</p>
+</div>
+
+<!-- ── SLIDE 2: Problem — Crowding the door ── -->
+<div class="slide s-photo s-photo-1">
+  <span class="tag tag-red">The Problem</span>
+  <h2>Patients crowd the door</h2>
+  <p class="lead">
+    No one knows whose turn it is.<br>
+    Should I go in? Should I wait?<br>
+    Everyone hovers right outside the consulting room.
+  </p>
+</div>
+
+<!-- ── SLIDE 3: Problem — Doctor interrupted ── -->
+<div class="slide s-photo s-photo-2">
+  <span class="tag tag-red">The Problem</span>
+  <h2>Doctor interrupted mid-consultation</h2>
+  <p class="lead">
+    Another patient walks in:<br>
+    <em>"Doctor, am I next?"</em><br>
+    Focus broken. Consultation disrupted.
+  </p>
+</div>
+
+<!-- ── SLIDE 4: Problem — Evening shift ── -->
+<div class="slide s-photo s-photo-3">
+  <span class="tag tag-red">Evening Shift</span>
+  <h2>6:30 PM — Receptionist goes home</h2>
+  <p class="lead">
+    Doctor finishes with a patient.<br>
+    Has to <em>walk out</em> and call the next name loudly — in front of everyone.
+  </p>
+  <p class="lead" style="margin-top:18px; font-size:22px; color:#dc2626; font-weight:700;">
+    Two doctors. One waiting room. Double the chaos.
+  </p>
+</div>
+
+<!-- ── SLIDE 5: Bridge — Paper tokens ── -->
+<div class="slide s-bridge">
+  <div class="big-emoji">🎫</div>
+  <h2>You already use paper tokens</h2>
+  <p class="lead" style="color:#92400e;">
+    Cut from a sheet. Handed at the door.<br>
+    It solves the numbering problem — but not everything.
+  </p>
+</div>
+
+<!-- ── SLIDE 6: Bridge — The gap ── -->
+<div class="slide s-bridge">
+  <div class="big-emoji" style="font-size:72px;">📄  ➜  📢</div>
+  <h2>Someone still has to call the name out loud</h2>
+  <div class="rule"></div>
+  <p class="lead" style="color:#92400e;">
+    Paper tokens tell patients their number.<br>
+    But when that number is called — who calls it?<br>
+    Doctor still has to come out. Patients still crowd the door.
+  </p>
+</div>
+
+<!-- ── SLIDE 7: Solution — Display ── -->
+<div class="slide s-solution">
+  <span class="tag tag-green">The Solution</span>
+  <h2>Token appears on the TV. Automatically.</h2>
+  <div class="phone-row">
+    <img src="/display-phone.png" class="phone-img" alt="Display screen showing current token">
+  </div>
+  <p class="lead" style="margin-top:20px;">No calling. No crowding. No interruptions.</p>
+</div>
+
+<!-- ── SLIDE 8: How it works ── -->
+<div class="slide s-solution">
+  <h2>How it works</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-circle">1</div>
+      <div class="step-emoji">🎫</div>
+      <p>Patient gets a token number when they arrive</p>
+    </div>
+    <div class="step">
+      <div class="step-circle">2</div>
+      <img src="/admin-phone.png" style="height:160px; border-radius:14px; margin-bottom:12px; box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+      <p>Doctor taps <strong>"Call Next"</strong> on their phone — without leaving the room</p>
+    </div>
+    <div class="step">
+      <div class="step-circle">3</div>
+      <div class="step-emoji">📺</div>
+      <p>Token number shown on TV + voice announcement plays</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── SLIDE 9: App screenshots ── -->
+<div class="slide s-solution">
+  <h2>Everything on the doctor's phone</h2>
+  <div class="phone-row">
+    <div style="text-align:center;">
+      <img src="/admin-phone.png" class="phone-img" alt="Admin — call next">
+      <p style="margin-top:10px; font-size:16px; opacity:0.6;">Call Next</p>
+    </div>
+    <div style="text-align:center;">
+      <img src="/admin-queue-list.png" class="phone-img" alt="Admin — queue list">
+      <p style="margin-top:10px; font-size:16px; opacity:0.6;">Queue List</p>
+    </div>
+    <div style="text-align:center;">
+      <img src="/admin-urgent-issued.png" class="phone-img" alt="Admin — urgent token">
+      <p style="margin-top:10px; font-size:16px; opacity:0.6;">Urgent Patient</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── SLIDE 10: Cost comparison ── -->
+<div class="slide s-cost">
+  <h2>What does it cost?</h2>
+  <table class="cost-table">
+    <thead>
+      <tr><th>Option</th><th>Cost</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Paper tokens (manual)</td>
+        <td>₹0 &nbsp;—&nbsp; but wastes the doctor's time every day</td>
+      </tr>
+      <tr>
+        <td>Webprint.in &amp; other systems</td>
+        <td class="highlight-red">₹4,800 / month &nbsp;×&nbsp; 12 = ₹57,600 / year</td>
+      </tr>
+      <tr>
+        <td><strong>TokenQ</strong></td>
+        <td class="highlight-green">100% FREE &nbsp;—&nbsp; software + configuration</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ── SLIDE 11: Pricing ── -->
+<div class="slide s-pricing">
+  <div class="big-emoji">🆓</div>
+  <h2>Software + configuration — <span class="highlight-green">completely FREE</span></h2>
+  <p class="lead" style="margin-bottom:32px;">All you need is a TV and a phone you already have.</p>
+  <div style="display:flex; gap:28px; justify-content:center; flex-wrap:wrap;">
+    <div class="price-box" style="padding:24px 36px;">
+      <p class="price-label">Software</p>
+      <p class="price-value" style="font-size:40px;">FREE</p>
+      <p class="price-note">download &amp; use</p>
+    </div>
+    <div class="price-box" style="padding:24px 36px;">
+      <p class="price-label">Configuration</p>
+      <p class="price-value" style="font-size:40px;">FREE</p>
+      <p class="price-note">setup &amp; support</p>
+    </div>
+    <div class="price-box" style="padding:24px 36px;">
+      <p class="price-label">Monthly fee</p>
+      <p class="price-value" style="font-size:40px;">₹0</p>
+      <p class="price-note">no subscription ever</p>
+    </div>
+  </div>
+  <p class="sub" style="margin-top:28px;">You provide: TV screen + Android/iPhone &nbsp;·&nbsp; We provide: the software</p>
+</div>
+
+<!-- ── SLIDE 12: Live demo ── -->
+<div class="slide s-demo">
+  <div class="big-emoji">🎬</div>
+  <h2>See it live right now</h2>
+  <p class="lead" style="opacity:0.6;">Open on your phone</p>
+  <div class="demo-box">tokenq.app/demo</div>
+  <p class="sub" style="margin-top:28px;">Display screen &nbsp;·&nbsp; Doctor admin &nbsp;·&nbsp; Patient check-in</p>
+  <p class="sub" style="margin-top:40px; font-size:16px;">
+    WhatsApp: <span style="color:#4ade80;">+91 [your number]</span>
+  </p>
+</div>
+
+<!-- Navigation arrows -->
+<button class="nav-arrow" id="btn-prev" aria-label="Previous slide">&#8592;</button>
+<button class="nav-arrow" id="btn-next" aria-label="Next slide">&#8594;</button>
+
+<!-- Navigation dots -->
+<div class="nav" id="nav"></div>
+<div class="slide-counter" id="counter"></div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  let cur = 0;
+
+  const nav     = document.getElementById('nav');
+  const counter = document.getElementById('counter');
+  const btnPrev = document.getElementById('btn-prev');
+  const btnNext = document.getElementById('btn-next');
+
+  const LIGHT_THEMES = ['s-bridge']; // s-photo slides have dark overlay so use white arrows
+
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.addEventListener('click', () => go(i));
+    nav.appendChild(d);
+  });
+
+  function go(n) {
+    const total = slides.length;
+    if (n < 0 || n >= total) return;
+    slides[cur].classList.remove('active');
+    nav.children[cur].classList.remove('active');
+    cur = n;
+    slides[cur].classList.add('active');
+    nav.children[cur].classList.add('active');
+    counter.textContent = (cur + 1) + ' / ' + total;
+
+    // Show/hide arrows at edges
+    btnPrev.classList.toggle('hidden', cur === 0);
+    btnNext.classList.toggle('hidden', cur === total - 1);
+
+    // Switch arrow colours for light-background slides
+    const isLight = LIGHT_THEMES.some(cls => slides[cur].classList.contains(cls));
+    document.body.classList.toggle('light-slide', isLight);
+  }
+
+  go(0);
+
+  btnPrev.addEventListener('click', () => go(cur - 1));
+  btnNext.addEventListener('click', () => go(cur + 1));
+
+  document.addEventListener('keydown', e => {
+    if (['ArrowRight', 'ArrowDown', ' ', 'PageDown'].includes(e.key)) { e.preventDefault(); go(cur + 1); }
+    if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); go(cur - 1); }
+  });
+
+  let tx = null;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (tx === null) return;
+    const d = tx - e.changedTouches[0].clientX;
+    if (Math.abs(d) > 40) go(cur + (d > 0 ? 1 : -1));
+    tx = null;
+  });
+</script>
+</body>
+</html>

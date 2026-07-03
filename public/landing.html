@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TokenQ — Smart Queue for Your Clinic</title>
+  <meta name="description" content="Free digital token display for small clinics. No monthly fees. Works on any TV. One-time setup.">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --blue:   #1565c0;
+      --green:  #166534;
+      --red:    #dc2626;
+      --amber:  #92400e;
+      --text:   #111827;
+      --muted:  #6b7280;
+      --border: #e5e7eb;
+    }
+
+    body {
+      font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+      color: var(--text);
+      background: #fff;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* Layout util */
+    .container { max-width: 520px; margin: 0 auto; padding: 0 20px; }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(160deg, #0f2744, #1565c0);
+      color: #fff;
+      padding: 64px 20px 72px;
+      text-align: center;
+    }
+    .hero-kicker {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      border-radius: 100px;
+      padding: 5px 18px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-size: 40px;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .hero h1 span { color: #93c5fd; }
+    .hero p {
+      font-size: 18px;
+      opacity: 0.8;
+      line-height: 1.6;
+      max-width: 360px;
+      margin: 0 auto 32px;
+    }
+    .hero-ml {
+      font-size: 16px;
+      opacity: 0.45;
+      margin-bottom: 36px;
+      font-style: italic;
+    }
+    .btn-demo {
+      display: inline-block;
+      background: #fff;
+      color: var(--blue);
+      font-weight: 800;
+      font-size: 16px;
+      padding: 14px 36px;
+      border-radius: 100px;
+      text-decoration: none;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    /* ── SECTION BASE ── */
+    section { padding: 56px 0; }
+    .section-label {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+    .label-red   { background: #fee2e2; color: var(--red); }
+    .label-amber { background: #fef3c7; color: var(--amber); }
+    .label-green { background: #dcfce7; color: var(--green); }
+    .label-blue  { background: #dbeafe; color: var(--blue); }
+
+    h2 { font-size: 28px; font-weight: 800; line-height: 1.2; margin-bottom: 12px; }
+    .body-text {
+      font-size: 17px;
+      line-height: 1.65;
+      color: #374151;
+    }
+
+    /* ── PROBLEM CARDS ── */
+    .problem-cards { display: flex; flex-direction: column; gap: 16px; margin-top: 28px; }
+    .problem-card {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 22px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .card-emoji { font-size: 36px; flex-shrink: 0; line-height: 1; }
+    .card-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .card-desc  { font-size: 14px; color: var(--muted); line-height: 1.5; }
+
+    /* ── BRIDGE (paper tokens) ── */
+    .bridge {
+      background: linear-gradient(135deg, #fffbeb, #fef9c3);
+      border-radius: 20px;
+      padding: 36px 28px;
+      margin: 0 20px;
+      text-align: center;
+    }
+    .bridge .big-e { font-size: 64px; margin-bottom: 16px; }
+    .bridge h3 { font-size: 22px; font-weight: 800; color: var(--amber); margin-bottom: 10px; }
+    .bridge p  { font-size: 16px; color: #92400e; line-height: 1.6; }
+    .bridge .gap-arrow { font-size: 28px; margin: 20px 0; opacity: 0.5; }
+    .bridge .gap-label {
+      font-size: 15px;
+      font-weight: 700;
+      color: #b45309;
+      background: #fde68a;
+      display: inline-block;
+      padding: 6px 18px;
+      border-radius: 100px;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .steps { display: flex; flex-direction: column; gap: 20px; margin-top: 28px; }
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .step-num {
+      width: 40px; height: 40px;
+      background: #166534;
+      color: #fff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 18px;
+      flex-shrink: 0;
+    }
+    .step-text { padding-top: 6px; }
+    .step-text strong { font-size: 16px; display: block; margin-bottom: 3px; }
+    .step-text span { font-size: 14px; color: var(--muted); line-height: 1.5; }
+
+    /* ── SCREENSHOTS ── */
+    .screens-bg {
+      background: linear-gradient(160deg, #052e16, #166534);
+      padding: 48px 0;
+      text-align: center;
+    }
+    .screens-bg h2 { color: #fff; margin-bottom: 8px; }
+    .screens-bg .body-text { color: rgba(255,255,255,0.65); margin-bottom: 28px; }
+    .screen-scroll {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      padding: 4px 20px 20px;
+      scrollbar-width: none;
+    }
+    .screen-scroll::-webkit-scrollbar { display: none; }
+    .screen-card { flex-shrink: 0; text-align: center; }
+    .screen-card img {
+      height: 260px;
+      border-radius: 16px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.35);
+    }
+    .screen-card p { color: rgba(255,255,255,0.5); font-size: 13px; margin-top: 10px; }
+
+    /* ── COST COMPARE ── */
+    .cost-table { width: 100%; border-collapse: collapse; margin-top: 24px; }
+    .cost-table th {
+      background: #f9fafb;
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 2px solid var(--border);
+    }
+    .cost-table td {
+      padding: 14px 16px;
+      font-size: 15px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .cost-table td:last-child { font-weight: 700; }
+    .cost-bad   { color: var(--red); }
+    .cost-good  { color: var(--green); }
+    .cost-muted { color: var(--muted); }
+
+    .winner-row td { background: #f0fdf4; }
+
+    /* ── PRICING ── */
+    .pricing-bg {
+      background: linear-gradient(160deg, #052e16, #166534);
+      padding: 56px 20px;
+      text-align: center;
+    }
+    .pricing-bg h2 { color: #fff; margin-bottom: 8px; }
+    .pricing-bg .body-text { color: rgba(255,255,255,0.65); margin-bottom: 32px; }
+
+    .price-card {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      padding: 32px 28px;
+      max-width: 340px;
+      margin: 0 auto;
+    }
+    .price-free {
+      font-size: 18px;
+      font-weight: 800;
+      color: #4ade80;
+      background: rgba(74,222,128,0.15);
+      display: inline-block;
+      padding: 4px 20px;
+      border-radius: 100px;
+      margin-bottom: 18px;
+    }
+    .price-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      font-size: 16px;
+    }
+    .price-row:last-child { border-bottom: none; }
+    .price-row .amount { font-weight: 800; color: #4ade80; }
+    .price-note { color: rgba(255,255,255,0.45); font-size: 13px; margin-top: 18px; line-height: 1.5; }
+
+    /* ── CTA ── */
+    .cta-section {
+      padding: 56px 20px;
+      text-align: center;
+    }
+    .cta-section h2 { margin-bottom: 8px; }
+    .cta-section p  { color: var(--muted); font-size: 16px; margin-bottom: 32px; }
+    .btn-wa {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #25d366;
+      color: #fff;
+      font-size: 17px;
+      font-weight: 700;
+      padding: 15px 32px;
+      border-radius: 100px;
+      text-decoration: none;
+      box-shadow: 0 4px 16px rgba(37,211,102,0.35);
+      margin-bottom: 16px;
+    }
+    .btn-demo-2 {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--blue);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 13px 28px;
+      border-radius: 100px;
+      text-decoration: none;
+    }
+    .cta-btns { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #0f172a;
+      color: rgba(255,255,255,0.35);
+      text-align: center;
+      padding: 28px 20px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    /* ── FLOATING WA BUTTON ── */
+    .wa-float {
+      position: fixed;
+      bottom: 24px;
+      right: 20px;
+      width: 56px; height: 56px;
+      background: #25d366;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 4px 16px rgba(37,211,102,0.45);
+      text-decoration: none;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="container">
+    <span class="hero-kicker">For Kerala Clinics</span>
+    <h1>No more <span>calling names</span> in your clinic</h1>
+    <p>Digital token display for small clinics. Patients see their number on the TV. Doctor calls next from their phone.</p>
+    <p class="hero-ml">ക്ലിനിക്കിലെ ക്യൂ — ഇനി ഡിജിറ്റൽ ആയി</p>
+    <a href="/display" class="btn-demo">See Live Demo →</a>
+  </div>
+</div>
+
+<!-- ── THE PROBLEM ── -->
+<section>
+  <div class="container">
+    <span class="section-label label-red">The Problem</span>
+    <h2>Every clinic has this problem</h2>
+    <p class="body-text">No token system means patients don't know their place. They crowd the door, interrupt consultations, and cause confusion.</p>
+
+    <div class="problem-cards">
+      <div class="problem-card">
+        <div class="card-emoji">👥🚪</div>
+        <div>
+          <div class="card-title">Patients crowd the door</div>
+          <div class="card-desc">Nobody knows if it's their turn. They hover right outside the consulting room — Should I go in? Should I wait?</div>
+        </div>
+      </div>
+
+      <div class="problem-card">
+        <div class="card-emoji">🩺👋</div>
+        <div>
+          <div class="card-title">Doctor interrupted mid-consultation</div>
+          <div class="card-desc">Another patient walks in: "Doctor, am I next?" Focus broken. Consultation disrupted. Time wasted.</div>
+        </div>
+      </div>
+
+      <div class="problem-card">
+        <div class="card-emoji">🕡</div>
+        <div>
+          <div class="card-title">Evening shift — receptionist gone</div>
+          <div class="card-desc">After 6:30 PM when the receptionist leaves, the doctor has to walk out and call names out loud. With two doctors — pure chaos.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── BRIDGE: Paper tokens ── -->
+<div class="bridge">
+  <div class="big-e">🎫</div>
+  <h3>You already use paper tokens</h3>
+  <p>Many clinics hand out paper slips with numbers. It helps. But there's still one problem.</p>
+  <div class="gap-arrow">↓</div>
+  <span class="gap-label">Someone still has to call the name out loud</span>
+  <p style="margin-top:16px; font-size:14px; color:#b45309;">
+    Paper tokens solve numbering — not the calling.<br>Doctor still walks out. Patients still crowd the door.
+  </p>
+</div>
+
+<!-- ── SOLUTION ── -->
+<section>
+  <div class="container">
+    <span class="section-label label-green">The Solution</span>
+    <h2>Token appears on the TV. Automatically.</h2>
+    <p class="body-text">TokenQ is a digital queue system. The TV screen shows who's being seen now and who's next. Doctor calls the next token from their phone — without leaving the room.</p>
+
+    <div class="steps">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <strong>🎫 Patient gets a token</strong>
+          <span>Receptionist issues a token number when the patient arrives. Or patient self check-in.</span>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <strong>📱 Doctor taps "Call Next" on phone</strong>
+          <span>No need to walk out. Tap one button from inside the consulting room.</span>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <strong>📺 Token shown on TV + voice announcement</strong>
+          <span>Patients in the waiting area see the number. English and Malayalam announcement plays automatically.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SCREENSHOTS ── -->
+<div class="screens-bg">
+  <div class="container">
+    <h2>Works on any TV &amp; any phone</h2>
+    <p class="body-text">No app to install. Open in any browser.</p>
+  </div>
+  <div class="screen-scroll">
+    <div class="screen-card">
+      <img src="/display-phone.png" alt="TV display showing current token">
+      <p>📺 TV Display</p>
+    </div>
+    <div class="screen-card">
+      <img src="/admin-phone.png" alt="Doctor's admin screen">
+      <p>📱 Doctor's Phone</p>
+    </div>
+    <div class="screen-card">
+      <img src="/admin-queue-list.png" alt="Queue list view">
+      <p>📋 Queue List</p>
+    </div>
+    <div class="screen-card">
+      <img src="/admin-urgent-issued.png" alt="Urgent token">
+      <p>⚡ Urgent Patient</p>
+    </div>
+    <div class="screen-card">
+      <img src="/display-paused.png" alt="Queue paused display">
+      <p>⏸ Queue Paused</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── COST COMPARISON ── -->
+<section>
+  <div class="container">
+    <span class="section-label label-blue">Cost Comparison</span>
+    <h2>Why pay ₹4,800/month?</h2>
+    <p class="body-text">Other queue systems charge a monthly subscription. TokenQ software is free — you pay only once for setup.</p>
+
+    <table class="cost-table">
+      <thead>
+        <tr><th>Option</th><th>What you pay</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Paper tokens (manual)</td>
+          <td class="cost-muted">₹0 — but wastes doctor's time daily</td>
+        </tr>
+        <tr>
+          <td>Webprint.in &amp; similar</td>
+          <td class="cost-bad">₹4,800 / month<br><span style="font-size:13px; font-weight:400; color:#9ca3af;">= ₹57,600 per year</span></td>
+        </tr>
+        <tr class="winner-row">
+          <td><strong>TokenQ ✓</strong></td>
+          <td class="cost-good">100% FREE<br><span style="font-size:13px; font-weight:400;">software + configuration</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ── PRICING ── -->
+<div class="pricing-bg">
+  <h2 style="color:#fff;">Simple, honest pricing</h2>
+  <p class="body-text">Software and configuration are completely free. You just need a TV screen and a smartphone.</p>
+
+  <div class="price-card">
+    <div class="price-free">100% Free to Use</div>
+    <div class="price-row">
+      <span>Software</span>
+      <span class="amount">FREE</span>
+    </div>
+    <div class="price-row">
+      <span>Configuration &amp; setup</span>
+      <span class="amount">FREE</span>
+    </div>
+    <div class="price-row">
+      <span>Monthly subscription</span>
+      <span style="color:#4ade80; font-weight:800;">₹0</span>
+    </div>
+    <div class="price-row">
+      <span>You provide</span>
+      <span style="color:rgba(255,255,255,0.6); font-size:14px;">TV screen + phone</span>
+    </div>
+    <p class="price-note">No hardware included. Clinic provides the TV and smartphone. Software and configuration at no charge.</p>
+  </div>
+</div>
+
+<!-- ── CTA ── -->
+<div class="cta-section">
+  <div class="container">
+    <h2>Ready to try it?</h2>
+    <p>See the live demo or WhatsApp us to schedule a free clinic visit</p>
+    <div class="cta-btns">
+      <a href="https://wa.me/91XXXXXXXXXX?text=Hi%2C%20I%20want%20to%20know%20more%20about%20TokenQ%20for%20my%20clinic" class="btn-wa">
+        <span>💬</span> WhatsApp Us
+      </a>
+      <a href="/display" class="btn-demo-2">
+        <span>🎬</span> See Live Demo
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <strong style="color:rgba(255,255,255,0.7);">TokenQ</strong> — Smart Queue Management for Small Clinics<br>
+  Made in Kerala 🌴 &nbsp;·&nbsp; Free software &nbsp;·&nbsp; One-time setup
+</footer>
+
+<!-- Floating WhatsApp button -->
+<a href="https://wa.me/91XXXXXXXXXX?text=Hi%2C%20I%20want%20to%20know%20more%20about%20TokenQ" class="wa-float" title="Chat on WhatsApp">💬</a>
+
+</body>
+</html>

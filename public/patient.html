@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Check In — Token Queue</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<style>
+  body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  .header-bar {
+    background: linear-gradient(135deg, #1a56db, #1e429f);
+    color: white;
+    padding: 1.5rem 1.5rem 3rem;
+    border-radius: 0 0 24px 24px;
+  }
+
+  .my-token-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+    padding: 2rem;
+    margin-top: -1.5rem;
+  }
+
+  .token-big {
+    font-size: 5rem;
+    font-weight: 800;
+    color: #1a56db;
+    line-height: 1;
+  }
+
+  .current-serving-card {
+    background: #f0f7ff;
+    border-left: 4px solid #1a56db;
+    border-radius: 10px;
+    padding: 1rem;
+  }
+
+  .wait-badge {
+    background: #fff3cd;
+    color: #856404;
+    border-radius: 8px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  #checkin-section .form-control { border-radius: 10px; font-size: 1rem; }
+  #checkin-section .btn { border-radius: 10px; font-size: 1.1rem; padding: 0.7rem; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="header-bar">
+  <div class="fw-light small text-white-50 text-uppercase tracking-wide mb-1">Welcome to</div>
+  <div class="fw-bold fs-4" id="clinic-name">Clinic</div>
+</div>
+
+<div class="container px-3 pb-5">
+
+  <!-- Check-in form (shown before token is issued) -->
+  <div id="checkin-section" class="my-token-card mb-3">
+    <div class="fw-semibold fs-5 mb-1">Get a Token Number</div>
+    <div class="text-muted small mb-3">Enter your name to join the queue</div>
+    <input type="text" class="form-control mb-2" id="patient-name-input" placeholder="Your name (optional)" autocomplete="off">
+    <button class="btn btn-primary w-100" id="btn-checkin">Join Queue</button>
+  </div>
+
+  <!-- My token (shown after check-in) -->
+  <div id="my-token-section" class="my-token-card mb-3" style="display:none;">
+    <div class="text-muted small text-uppercase mb-1">Your Token Number</div>
+    <div class="token-big mb-2" id="my-token-number">—</div>
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <span class="wait-badge" id="my-position">Calculating…</span>
+      <span class="wait-badge" id="my-wait-time"></span>
+    </div>
+    <div class="current-serving-card">
+      <div class="text-muted small">Currently Serving</div>
+      <div class="fw-bold fs-4" id="current-serving-token">—</div>
+    </div>
+  </div>
+
+  <!-- Live queue status (always visible) -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <div class="fw-semibold mb-2">Live Queue Status</div>
+      <div class="d-flex justify-content-between text-muted small mb-1">
+        <span>Currently serving:</span>
+        <strong class="text-dark" id="status-current">—</strong>
+      </div>
+      <div class="d-flex justify-content-between text-muted small mb-1">
+        <span>Patients waiting:</span>
+        <strong class="text-dark" id="status-waiting">0</strong>
+      </div>
+      <div class="d-flex justify-content-between text-muted small">
+        <span>Tokens issued today:</span>
+        <strong class="text-dark" id="status-issued">0</strong>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+let myTokenNumber = null;
+let avgMinutes = 5;
+
+function renderStatus(data) {
+  document.getElementById('clinic-name').textContent = data.clinicName || 'Clinic';
+  avgMinutes = data.avgMinutesPerPatient || 5;
+
+  const cur = data.currentToken > 0 ? String(data.currentToken).padStart(3, '0') : '—';
+  document.getElementById('status-current').textContent = cur;
+  document.getElementById('status-waiting').textContent = data.waitingCount || 0;
+  document.getElementById('status-issued').textContent = data.lastTokenIssued || 0;
+  document.getElementById('current-serving-token').textContent = cur;
+
+  if (myTokenNumber !== null) {
+    const queue = (data.queue || []).map(t => t.tokenNumber);
+    const pos = queue.indexOf(myTokenNumber);
+
+    if (data.currentToken === myTokenNumber) {
+      document.getElementById('my-position').textContent = '🟢 Your turn now!';
+      document.getElementById('my-wait-time').textContent = '';
+    } else if (pos >= 0) {
+      const place = pos + 1;
+      const mins = place * avgMinutes;
+      document.getElementById('my-position').textContent = `#${place} in queue`;
+      document.getElementById('my-wait-time').textContent = `~${mins} min wait`;
+    } else if (data.currentToken > myTokenNumber || !queue.includes(myTokenNumber)) {
+      document.getElementById('my-position').textContent = '✓ Done';
+      document.getElementById('my-wait-time').textContent = '';
+    }
+  }
+}
+
+document.getElementById('btn-checkin').addEventListener('click', async () => {
+  const name = document.getElementById('patient-name-input').value.trim();
+  const res = await fetch('/api/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientName: name })
+  });
+  const data = await res.json();
+  if (data.success) {
+    myTokenNumber = data.tokenNumber;
+    document.getElementById('my-token-number').textContent = String(data.tokenNumber).padStart(3, '0');
+    document.getElementById('checkin-section').style.display = 'none';
+    document.getElementById('my-token-section').style.display = 'block';
+    // Fetch fresh status to update position
+    const statusRes = await fetch('/api/status');
+    renderStatus(await statusRes.json());
+  }
+});
+
+document.getElementById('patient-name-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('btn-checkin').click();
+});
+
+socket.on('queue-updated', renderStatus);
+socket.on('token-called',  renderStatus);
+socket.on('queue-reset',   (data) => { myTokenNumber = null; renderStatus(data); });
+</script>
+</body>
+</html>

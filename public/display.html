@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Token Display</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;600;700;900&family=Noto+Sans+Devanagari:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  .hi { font-family: 'Noto Sans Devanagari', sans-serif; }
+
+  body {
+    background: #f0f4ff;
+    font-family: 'Noto Sans Malayalam', 'Noto Sans Devanagari', 'Segoe UI', Arial, sans-serif;
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+  }
+
+  /* ── Clinic header ── */
+  .top-bar {
+    background: #1a56db;
+    color: white;
+    text-align: center;
+    padding: clamp(0.4rem, 1.2vw, 0.8rem) 1rem;
+    flex-shrink: 0;
+  }
+  .clinic-name {
+    font-size: clamp(1rem, 3vw, 2rem);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ── Main layout ── */
+  .body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.4rem 0.5rem;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* ── Card section label (inside card) ── */
+  .card-section-label {
+    font-size: clamp(0.65rem, 2vw, 0.85rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: rgba(255,255,255,0.5);
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    flex-shrink: 0;
+  }
+  .card-section-label .ml,
+  .card-section-label .hi {
+    font-size: clamp(0.7rem, 2.2vw, 0.95rem);
+    letter-spacing: 0;
+    text-transform: none;
+    font-weight: 600;
+    color: rgba(255,255,255,0.4);
+  }
+
+  /* ── NOW SERVING section ── */
+  .now-serving-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  /* ── NOW SERVING card ── */
+  .now-serving-card {
+    background: #1a56db;
+    border-radius: clamp(12px, 2vw, 18px);
+    padding: clamp(0.8rem, 2vw, 1.8rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 0.3rem;
+    flex: 1;
+    box-shadow: 0 6px 32px rgba(26, 86, 219, 0.3);
+    transition: background 0.3s;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .now-serving-card.idle {
+    background: #d1d5db;
+    box-shadow: none;
+  }
+
+  .now-serving-card.flash {
+    animation: card-pop 0.7s cubic-bezier(0.34, 1.4, 0.64, 1);
+  }
+
+  @keyframes card-pop {
+    0%   { background: #16a34a; transform: scale(1.03); box-shadow: 0 10px 50px rgba(22,163,74,0.5); }
+    65%  { transform: scale(0.99); }
+    100% { background: #1a56db; transform: scale(1); box-shadow: 0 6px 32px rgba(26,86,219,0.3); }
+  }
+
+  /* ── Urgent badge on now-serving card ── */
+  .urgent-badge {
+    position: absolute;
+    top: clamp(0.5rem, 1.5vw, 1rem);
+    right: clamp(0.5rem, 1.5vw, 1rem);
+    background: #ef4444;
+    color: white;
+    font-size: clamp(0.6rem, 1.8vw, 0.85rem);
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.25em 0.6em;
+    border-radius: 6px;
+    display: none;
+  }
+  .urgent-badge.show { display: block; }
+
+  .patient-label {
+    font-size: clamp(0.6rem, 1.8vw, 0.9rem);
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .now-serving-card.idle .patient-label { color: #9ca3af; }
+
+  .token-num {
+    font-size: clamp(4.5rem, 35vh, 55vh);
+    font-weight: 900;
+    color: white;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    flex-shrink: 0;
+  }
+  .now-serving-card.idle .token-num {
+    color: #b0b7c3;
+    font-size: clamp(2.5rem, 18vh, 25vh);
+    font-weight: 300;
+  }
+
+  .patient-name {
+    font-size: clamp(2rem, 17vh, 22vh);
+    font-weight: 700;
+    color: white;
+    line-height: 1.1;
+    word-break: break-word;
+    max-width: 100%;
+    flex-shrink: 0;
+  }
+  .now-serving-card.idle .patient-name {
+    color: #b0b7c3;
+    font-size: clamp(1rem, 5vh, 7vh);
+    font-weight: 400;
+  }
+
+  .patient-name-ml {
+    font-size: clamp(1.2rem, 9vh, 12vh);
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.2;
+    word-break: break-word;
+    max-width: 100%;
+    flex-shrink: 0;
+  }
+  .now-serving-card.idle .patient-name-ml { display: none; }
+
+  /* ── UP NEXT section ── */
+  .up-next-section {
+    flex-shrink: 0;
+  }
+
+  .up-next-card {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: clamp(10px, 1.5vw, 14px);
+    padding: clamp(0.5rem, 1.5vw, 1rem) clamp(0.8rem, 2vw, 1.5rem);
+    display: flex;
+    align-items: center;
+    gap: clamp(0.6rem, 1.5vw, 1.2rem);
+  }
+
+  .next-token-num {
+    font-size: clamp(2rem, 8vh, 10vh);
+    font-weight: 900;
+    color: #374151;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .next-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  .next-label {
+    font-size: clamp(0.65rem, 1.8vw, 0.9rem);
+    color: #9ca3af;
+    font-weight: 600;
+  }
+
+  .next-name {
+    font-size: clamp(1.3rem, 5.5vh, 7vh);
+    font-weight: 700;
+    color: #374151;
+    word-break: break-word;
+    line-height: 1.15;
+  }
+
+  .next-name-ml {
+    font-size: clamp(0.9rem, 3.5vh, 4.5vh);
+    font-weight: 600;
+    color: #6b7280;
+    line-height: 1.2;
+    word-break: break-word;
+  }
+
+  .next-empty {
+    color: #d1d5db;
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .next-urgent {
+    display: none;
+    background: #fee2e2;
+    color: #dc2626;
+    font-size: clamp(0.55rem, 1.4vw, 0.72rem);
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.15em 0.5em;
+    border-radius: 4px;
+    margin-top: 0.15rem;
+    width: fit-content;
+  }
+  .next-urgent.show { display: block; }
+
+  /* ── Status bar ── */
+  .bottom-bar {
+    background: white;
+    border-top: 2px solid #e5e7eb;
+    padding: clamp(0.25rem, 0.6vw, 0.45rem) 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: clamp(0.65rem, 1.2vw, 0.85rem);
+    color: #6b7280;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #16a34a;
+    font-weight: 600;
+  }
+  .live-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #16a34a;
+    animation: blink 2s ease-in-out infinite;
+  }
+  .live-dot.offline  { background: #dc2626; animation: none; }
+  .live-badge.offline { color: #dc2626; }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.2; }
+  }
+
+  /* ── Sound unlock banner ── */
+  #sound-banner {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: #f59e0b;
+    color: #1c1917;
+    text-align: center;
+    padding: 0.5rem 1rem;
+    font-size: clamp(0.75rem, 1.8vw, 0.9rem);
+    font-weight: 600;
+    z-index: 100;
+    cursor: pointer;
+    animation: pulse-banner 2s ease-in-out infinite;
+  }
+  #sound-banner.hidden { display: none; }
+  @keyframes pulse-banner {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.75; }
+  }
+
+  /* ── Pause overlay ── */
+  #pause-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(6px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(0.5rem, 2vh, 1.2rem);
+    z-index: 50;
+    color: white;
+    text-align: center;
+    padding: 1rem;
+  }
+  #pause-overlay.hidden { display: none; }
+  .pause-icon  { font-size: clamp(3rem, 12vh, 8rem); line-height: 1; opacity: 0.9; }
+  .pause-title { font-size: clamp(1.5rem, 6vh, 4rem); font-weight: 800; letter-spacing: 0.05em; }
+  .pause-sub   { font-size: clamp(0.85rem, 2.5vh, 1.5rem); font-weight: 500; color: rgba(255,255,255,0.65); }
+</style>
+</head>
+<body>
+
+<div id="sound-banner">🔔 ശബ്ദം ഓണാക്കാൻ ഇവിടെ ടാപ്പ് ചെയ്യൂ &nbsp;·&nbsp; ध्वनि चालू करने के लिए यहाँ टैप करें &nbsp;·&nbsp; Tap here to enable sound</div>
+
+<div id="pause-overlay" class="hidden">
+  <div class="pause-icon">⏸</div>
+  <div class="pause-title">Queue Paused</div>
+  <div class="pause-sub">ഡോക്ടർ ഇപ്പോൾ ലഭ്യമല്ല &nbsp;·&nbsp; Please wait · कृपया प्रतीक्षा करें</div>
+</div>
+
+<div class="top-bar">
+  <div class="clinic-name" id="clinic-name">Loading…</div>
+</div>
+
+<div class="body">
+
+  <!-- NOW SERVING -->
+  <div class="now-serving-section">
+    <div class="now-serving-card idle" id="now-card">
+      <div class="urgent-badge" id="urgent-badge">⚡ Urgent</div>
+      <div class="card-section-label">
+        Now Serving &nbsp;
+        <span class="ml">ഇപ്പോൾ സേവിക്കുന്നത്</span>
+        <span style="color:rgba(255,255,255,0.25);">·</span>
+        <span class="hi">अभी सेवा में</span>
+      </div>
+      <div class="patient-label">Token No. &nbsp;<span class="ml">ടോക്കൺ നം.</span> &nbsp;<span class="hi">टोकन नं.</span></div>
+      <div class="token-num" id="cur-token">—</div>
+      <div class="patient-name" id="cur-name">കാത്തിരിക്കുന്നു…</div>
+      <div class="patient-name-ml" id="cur-name-ml"></div>
+    </div>
+  </div>
+
+  <!-- UP NEXT -->
+  <div class="up-next-section">
+    <div class="up-next-card">
+      <div class="next-token-num" id="next-token">—</div>
+      <div class="next-info">
+        <div class="next-label">
+          Up Next &nbsp;·&nbsp;
+          <span class="ml">അടുത്ത ആൾ</span>
+          &nbsp;·&nbsp;
+          <span class="hi">अगले · ദയവായി തയ്യാറാകൂ</span>
+        </div>
+        <div class="next-name next-empty" id="next-name">ആരും കാത്തിരിക്കുന്നില്ല</div>
+        <div class="next-urgent" id="next-urgent">⚡ Urgent</div>
+        <div class="next-name-ml" id="next-name-ml"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="bottom-bar">
+  <div class="live-badge" id="live-badge">
+    <div class="live-dot" id="live-dot"></div>
+    <span id="conn-status">Connecting…</span>
+  </div>
+  <span id="waiting-count"></span>
+  <span id="clock"></span>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+// ── Audio + TTS unlock for mobile ──
+let audioCtx = null;
+const soundBanner = document.getElementById('sound-banner');
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function unlockAudio() {
+  try {
+    const ctx = getAudioCtx();
+    const buf = ctx.createBuffer(1, 1, 22050);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(ctx.destination);
+    src.start(0);
+    // Warm up TTS so first announcement isn't silent on iOS
+    if (window.speechSynthesis) {
+      const warmup = new SpeechSynthesisUtterance('');
+      warmup.volume = 0;
+      speechSynthesis.speak(warmup);
+    }
+    soundBanner.classList.add('hidden');
+  } catch (e) {}
+}
+
+document.addEventListener('click',     unlockAudio, { once: true });
+document.addEventListener('touchstart', unlockAudio, { once: true });
+soundBanner.addEventListener('click', unlockAudio);
+
+const nowCard      = document.getElementById('now-card');
+const curToken     = document.getElementById('cur-token');
+const curName      = document.getElementById('cur-name');
+const curNameMl    = document.getElementById('cur-name-ml');
+const urgentBadge  = document.getElementById('urgent-badge');
+const nextToken    = document.getElementById('next-token');
+const nextName     = document.getElementById('next-name');
+const nextNameMl   = document.getElementById('next-name-ml');
+const nextUrgent   = document.getElementById('next-urgent');
+const clinicEl     = document.getElementById('clinic-name');
+const waitCount    = document.getElementById('waiting-count');
+const liveBadge    = document.getElementById('live-badge');
+const liveDot      = document.getElementById('live-dot');
+const connStatus   = document.getElementById('conn-status');
+const clockEl      = document.getElementById('clock');
+const pauseOverlay = document.getElementById('pause-overlay');
+
+function playDingDong() {
+  try {
+    const ctx = getAudioCtx();
+    function tone(freq, startAt, duration, gain) {
+      const osc = ctx.createOscillator();
+      const env = ctx.createGain();
+      osc.connect(env); env.connect(ctx.destination);
+      osc.type = 'sine'; osc.frequency.value = freq;
+      env.gain.setValueAtTime(0, ctx.currentTime + startAt);
+      env.gain.linearRampToValueAtTime(gain, ctx.currentTime + startAt + 0.02);
+      env.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startAt + duration);
+      osc.start(ctx.currentTime + startAt);
+      osc.stop(ctx.currentTime + startAt + duration);
+    }
+    tone(880, 0.0, 1.0, 0.45);
+    tone(660, 0.6, 1.2, 0.45);
+  } catch (e) {}
+}
+
+// ── TTS announcement — English first, then Malayalam ──
+function speak(text, lang) {
+  if (!window.speechSynthesis) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang   = lang;
+  u.rate   = 0.88;
+  u.volume = 1;
+  speechSynthesis.speak(u);
+}
+
+function announceToken(data) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+
+  const num    = data.currentToken;
+  const name   = data.currentPatientName;
+  const nameML = data.currentPatientNameML;
+
+  const engText = name
+    ? `Token ${num}. ${name}. Please come in.`
+    : `Token ${num}. Please come in.`;
+  speak(engText, 'en-IN');
+
+  // Malayalam follows after English finishes (~3.5 s delay)
+  const mlText = nameML
+    ? `ടോക്കൺ ${num}. ${nameML}. അകത്ത് വരൂ.`
+    : `ടോക്കൺ ${num}. അകത്ത് വരൂ.`;
+  setTimeout(() => speak(mlText, 'ml-IN'), 3500);
+}
+
+function renderStatus(data) {
+  clinicEl.textContent = data.clinicName || 'Clinic';
+
+  // Pause overlay
+  pauseOverlay.classList.toggle('hidden', !data.paused);
+
+  if (data.currentToken > 0) {
+    nowCard.classList.remove('idle');
+    curToken.textContent  = String(data.currentToken).padStart(3, '0');
+    curName.textContent   = data.currentPatientName || ('Patient ' + data.currentToken);
+    curName.classList.remove('next-empty');
+    curNameMl.textContent = data.currentPatientNameML || '';
+    urgentBadge.classList.toggle('show', data.currentPriority === 'urgent');
+  } else {
+    nowCard.classList.add('idle');
+    curToken.textContent  = '—';
+    curName.textContent   = 'കാത്തിരിക്കുന്നു…';
+    curNameMl.textContent = '';
+    urgentBadge.classList.remove('show');
+  }
+
+  if (data.nextToken > 0) {
+    nextToken.textContent  = String(data.nextToken).padStart(3, '0');
+    nextName.textContent   = data.nextPatientName || ('Patient ' + data.nextToken);
+    nextName.classList.remove('next-empty');
+    nextNameMl.textContent = data.nextPatientNameML || '';
+    nextUrgent.classList.toggle('show', data.nextPriority === 'urgent');
+  } else {
+    nextToken.textContent  = '—';
+    nextName.textContent   = 'ആരും കാത്തിരിക്കുന്നില്ല';
+    nextName.classList.add('next-empty');
+    nextNameMl.textContent = '';
+    nextUrgent.classList.remove('show');
+  }
+
+  const w = data.waitingCount || 0;
+  const mins = data.estimatedWaitMinutes || 0;
+  waitCount.textContent = w > 0
+    ? `${w} പേർ കാത്തിരിക്കുന്നു${mins > 0 ? ' · ~' + mins + ' min' : ''}`
+    : '';
+}
+
+function flash() {
+  nowCard.classList.remove('flash');
+  void nowCard.offsetWidth;
+  nowCard.classList.add('flash');
+}
+
+const socket = io();
+
+socket.on('connect', () => {
+  connStatus.textContent = 'Live';
+  liveDot.classList.remove('offline');
+  liveBadge.classList.remove('offline');
+});
+socket.on('disconnect', () => {
+  connStatus.textContent = 'Reconnecting…';
+  liveDot.classList.add('offline');
+  liveBadge.classList.add('offline');
+});
+socket.on('queue-updated', renderStatus);
+socket.on('queue-reset',   renderStatus);
+socket.on('token-called', (data) => {
+  renderStatus(data);
+  flash();
+  playDingDong();
+  announceToken(data);
+});
+
+setInterval(() => {
+  clockEl.textContent = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+}, 1000);
+</script>
+</body>
+</html>

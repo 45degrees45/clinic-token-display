@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Token Queue</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<style>
+  body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+  .navbar { background: #1a56db !important; }
+
+  /* Big call-next button */
+  #btn-next {
+    font-size: 1.6rem;
+    font-weight: 700;
+    padding: 1.1rem;
+    border-radius: 16px;
+    letter-spacing: 0.03em;
+    box-shadow: 0 4px 16px rgba(22,163,74,0.35);
+  }
+  #btn-next:active { transform: scale(0.97); }
+
+  /* Current/next status cards */
+  .serving-card {
+    background: linear-gradient(135deg, #1a56db, #1e429f);
+    color: white;
+    border-radius: 14px;
+    padding: 1rem 1.2rem;
+  }
+  .serving-card .token-num {
+    font-size: 2.8rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .serving-card .patient-nm {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 0.15rem;
+    opacity: 0.9;
+  }
+  .serving-card .sub { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.15em; opacity: 0.6; }
+
+  .next-card {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 1rem 1.2rem;
+  }
+  .next-card .token-num { font-size: 2.2rem; font-weight: 800; color: #374151; line-height: 1; }
+  .next-card .patient-nm { font-size: 1rem; font-weight: 600; color: #374151; margin-top: 0.15rem; }
+  .next-card .sub { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.15em; color: #9ca3af; }
+
+  .btn-action {
+    font-size: 1rem;
+    padding: 0.7rem 1rem;
+    border-radius: 12px;
+    font-weight: 600;
+  }
+
+  /* Pause button states */
+  #btn-pause.is-paused {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: white;
+  }
+
+  .queue-item {
+    background: white;
+    border-radius: 10px;
+    padding: 0.65rem 1rem;
+    margin-bottom: 0.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+  }
+  .queue-item.urgent-row { border-left: 3px solid #ef4444; }
+  .queue-item .badge-num {
+    background: #e8eeff;
+    color: #1a56db;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 7px;
+    min-width: 3rem;
+    text-align: center;
+  }
+  .queue-item.urgent-row .badge-num { background: #fee2e2; color: #dc2626; }
+
+  .toast-container { z-index: 9999; }
+
+  /* 16px minimum on all inputs — prevents iOS auto-zoom on focus */
+  .form-control, .form-control:focus { font-size: 16px !important; border-radius: 10px; }
+
+  /* Keyboard shortcut hint — desktop only */
+  .key-hint { font-size: 0.7rem; color: #9ca3af; margin-top: 0.3rem; }
+
+  /* Status cards — bigger token numbers */
+  .serving-card .token-num { font-size: clamp(2.2rem, 8vw, 3.5rem); }
+  .next-card .token-num    { font-size: clamp(1.8rem, 7vw, 2.8rem); }
+  .serving-card .patient-nm,
+  .next-card .patient-nm   { font-size: clamp(0.95rem, 3.5vw, 1.1rem); }
+
+  /* Issue button — full width on small screens */
+  @media (max-width: 480px) {
+    #issue-input-row { flex-direction: column; gap: 0.5rem; }
+    #issue-input-row .form-control { border-radius: 10px !important; }
+    #btn-issue { width: 100%; border-radius: 10px !important; }
+  }
+
+  /* Urgent checkbox label */
+  .urgent-check-label {
+    font-size: 0.9rem;
+    color: #dc2626;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  /* Bulk entry */
+  #bulk-toggle { font-size: 0.9rem; color: #1a56db; background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline; }
+  #bulk-panel { display: none; }
+  #bulk-panel.open { display: block; }
+  #bulk-textarea {
+    font-size: 16px !important;
+    border-radius: 10px;
+    resize: vertical;
+    min-height: 160px;
+    font-family: 'Segoe UI', monospace;
+    line-height: 1.6;
+  }
+  .bulk-preview-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 0.9rem;
+  }
+  .bulk-preview-row:last-child { border-bottom: none; }
+  .bulk-preview-num {
+    background: #e8eeff;
+    color: #1a56db;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 5px;
+    min-width: 2.2rem;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .bulk-preview-row.urgent .bulk-preview-num { background: #fee2e2; color: #dc2626; }
+  .bulk-preview-urgent {
+    background: #fee2e2;
+    color: #dc2626;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.1em 0.4em;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .bulk-preview-ml { color: #6b7280; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark px-3 py-2 mb-3">
+  <span class="navbar-brand fw-bold" id="nav-clinic-name">Clinic Admin</span>
+  <span class="text-white-50 small" id="nav-date"></span>
+</nav>
+
+<div class="container-fluid px-3 pb-5">
+
+  <!-- BIG CALL NEXT button -->
+  <button class="btn btn-success w-100 mb-3" id="btn-next">
+    ▶&nbsp; Call Next Patient
+  </button>
+  <div class="key-hint text-center mb-3 d-none d-sm-block">Press <kbd>Space</kbd> or <kbd>Enter</kbd> to call next</div>
+
+  <!-- Now Serving + Up Next -->
+  <div class="row g-2 mb-3">
+    <div class="col-12 col-sm-6">
+      <div class="serving-card h-100">
+        <div class="sub mb-1">Now Serving</div>
+        <div class="token-num" id="cur-token">—</div>
+        <div class="patient-nm" id="cur-name">—</div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6">
+      <div class="next-card h-100">
+        <div class="sub mb-1">Up Next</div>
+        <div class="token-num" id="next-token">—</div>
+        <div class="patient-nm" id="next-name" style="color:#9ca3af;">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Secondary actions: Recall | Pause | Skip -->
+  <div class="row g-2 mb-3">
+    <div class="col-4">
+      <button class="btn btn-outline-primary btn-action w-100" id="btn-recall">🔄 Recall</button>
+    </div>
+    <div class="col-4">
+      <button class="btn btn-outline-secondary btn-action w-100" id="btn-pause">⏸ Pause</button>
+    </div>
+    <div class="col-4">
+      <button class="btn btn-outline-warning btn-action w-100" id="btn-skip">⏭ Skip</button>
+    </div>
+  </div>
+
+  <!-- Issue Token -->
+  <div class="card border-0 shadow-sm mb-3" id="issue-form">
+    <div class="card-body">
+      <div class="fw-semibold mb-2">Issue New Token</div>
+      <div class="d-flex gap-2 mb-2" id="issue-input-row">
+        <input type="text" class="form-control" id="patient-name" placeholder="Patient name (English)" autocomplete="off" inputmode="text">
+        <button class="btn btn-primary px-4" id="btn-issue">Issue</button>
+      </div>
+      <input type="text" class="form-control mb-2" id="patient-name-ml" placeholder="Malayalam name · മലയാളം പേര് (optional)" autocomplete="off" lang="ml" inputmode="text">
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <input class="form-check-input m-0" type="checkbox" id="issue-urgent" style="width:1.2rem;height:1.2rem;">
+        <label class="urgent-check-label" for="issue-urgent">⚡ Mark as Urgent — patient needs priority</label>
+      </div>
+      <div class="text-success small mt-2" id="issue-feedback" style="min-height:1.2em;"></div>
+    </div>
+  </div>
+
+  <!-- Bulk Entry -->
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="fw-semibold">Bulk Entry</span>
+        <button id="bulk-toggle">▼ Enter patient list</button>
+      </div>
+      <div id="bulk-panel">
+        <div class="text-muted small mb-2">
+          One name per line — press <strong>Return ↵</strong> after each name.<br>
+          With Malayalam: <code>English name | മലയാളം പേര്</code><br>
+          Mark urgent with <code>*</code>: <code>* Ravi | രവി</code>
+        </div>
+        <textarea class="form-control mb-2" id="bulk-textarea"
+          placeholder="Ravi&#10;* Meera | മീര&#10;John&#10;* Priya | പ്രിയ"
+          autocomplete="off" autocorrect="off" spellcheck="false"
+          inputmode="text" enterkeyhint="enter"></textarea>
+        <div id="bulk-preview" class="mb-2" style="display:none;">
+          <div class="text-muted small mb-1"><span id="bulk-count">0</span> patients</div>
+          <div id="bulk-preview-list"></div>
+        </div>
+        <button class="btn btn-primary w-100" id="btn-bulk-issue" disabled>Issue All Tokens</button>
+        <div class="text-success small mt-2" id="bulk-feedback" style="min-height:1.2em;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Queue list -->
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="fw-semibold">Waiting Queue</span>
+        <span class="badge bg-secondary" id="queue-badge">0</span>
+      </div>
+      <div id="queue-list">
+        <div class="text-muted small text-center py-2">Queue is empty</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mt-2">
+    <button class="btn btn-outline-danger btn-sm" id="btn-reset">Reset Queue</button>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="toast" class="toast align-items-center text-bg-dark border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body" id="toast-msg"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+let toastEl;
+
+document.addEventListener('DOMContentLoaded', () => {
+  toastEl = new bootstrap.Toast(document.getElementById('toast'), { delay: 2500 });
+  document.getElementById('nav-date').textContent = new Date().toLocaleDateString('en-IN', {
+    weekday: 'short', day: 'numeric', month: 'short'
+  });
+});
+
+function showToast(msg) {
+  document.getElementById('toast-msg').textContent = msg;
+  toastEl?.show();
+}
+
+function pad(n) { return String(n).padStart(3, '0'); }
+
+const btnPause = document.getElementById('btn-pause');
+
+function renderStatus(data) {
+  document.getElementById('nav-clinic-name').textContent = data.clinicName || 'Clinic';
+
+  // Pause button state
+  if (data.paused) {
+    btnPause.textContent = '▶ Resume';
+    btnPause.classList.add('is-paused');
+  } else {
+    btnPause.textContent = '⏸ Pause';
+    btnPause.classList.remove('is-paused');
+  }
+
+  // Now serving
+  document.getElementById('cur-token').textContent = data.currentToken > 0 ? pad(data.currentToken) : '—';
+  document.getElementById('cur-name').textContent  = data.currentPatientName || (data.currentToken > 0 ? 'Patient' : '—');
+
+  // Up next
+  document.getElementById('next-token').textContent = data.nextToken > 0 ? pad(data.nextToken) : '—';
+  const nextNameEl = document.getElementById('next-name');
+  nextNameEl.textContent  = data.nextPatientName || (data.nextToken > 0 ? 'Patient' : 'Queue empty');
+  nextNameEl.style.color  = data.nextToken > 0 ? '#374151' : '#9ca3af';
+
+  // Queue count
+  const w = data.waitingCount || 0;
+  document.getElementById('queue-badge').textContent = w;
+
+  // Queue list
+  const list = document.getElementById('queue-list');
+  if (!data.queue || data.queue.length === 0) {
+    list.innerHTML = '<div class="text-muted small text-center py-2">Queue is empty</div>';
+  } else {
+    list.innerHTML = data.queue.map((t, i) => {
+      const isUrgent = t.priority === 'urgent';
+      return `
+        <div class="queue-item${isUrgent ? ' urgent-row' : ''}">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge-num">${pad(t.tokenNumber)}</span>
+            <span class="text-muted small">${t.patientName || '—'}</span>
+            ${isUrgent ? '<span class="badge bg-danger" style="font-size:0.65rem;">⚡ Urgent</span>' : ''}
+          </div>
+          <span class="text-muted small">#${i + 1}</span>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+async function apiPost(url, body = {}) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+
+document.getElementById('btn-next').addEventListener('click', async () => {
+  const data = await apiPost('/api/next');
+  if (!data.success) showToast(data.message || 'Queue is empty');
+});
+
+document.getElementById('btn-recall').addEventListener('click', async () => {
+  const data = await apiPost('/api/recall');
+  if (!data.success) showToast(data.message || 'No active token');
+  else showToast(`Recalled token ${pad(data.currentToken)}`);
+});
+
+btnPause.addEventListener('click', async () => {
+  const data = await apiPost('/api/pause');
+  showToast(data.paused ? 'Queue paused — display shows "Please Wait"' : 'Queue resumed');
+});
+
+document.getElementById('btn-skip').addEventListener('click', async () => {
+  const data = await apiPost('/api/skip');
+  if (!data.success) showToast(data.message || 'No active token');
+  else showToast(`Skipped token ${pad(data.skippedToken || 0)}`);
+});
+
+document.getElementById('btn-issue').addEventListener('click', async () => {
+  const nameInput   = document.getElementById('patient-name');
+  const nameMLInput = document.getElementById('patient-name-ml');
+  const urgentInput = document.getElementById('issue-urgent');
+  const data = await apiPost('/api/token', {
+    patientName:   nameInput.value.trim(),
+    patientNameML: nameMLInput.value.trim(),
+    priority:      urgentInput.checked ? 'urgent' : 'normal'
+  });
+  if (data.success) {
+    const fb = document.getElementById('issue-feedback');
+    fb.textContent = `Token ${pad(data.tokenNumber)} issued — Position #${data.queuePosition}`;
+    nameInput.value   = '';
+    nameMLInput.value = '';
+    urgentInput.checked = false;
+    setTimeout(() => fb.textContent = '', 3000);
+  }
+});
+
+document.getElementById('patient-name').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('btn-issue').click();
+});
+document.getElementById('patient-name-ml').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('btn-issue').click();
+});
+
+document.getElementById('btn-reset').addEventListener('click', async () => {
+  if (!confirm('Reset the entire queue? This cannot be undone.')) return;
+  await apiPost('/api/reset');
+  showToast('Queue has been reset');
+});
+
+// Space / Enter shortcut to call next (when not typing in input)
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === ' ' || e.key === 'Enter') {
+    e.preventDefault();
+    document.getElementById('btn-next').click();
+  }
+});
+
+socket.on('queue-updated', renderStatus);
+socket.on('token-called',  renderStatus);
+socket.on('queue-reset',   renderStatus);
+
+// ── Bulk Entry ──────────────────────────────────
+const bulkToggle      = document.getElementById('bulk-toggle');
+const bulkPanel       = document.getElementById('bulk-panel');
+const bulkTextarea    = document.getElementById('bulk-textarea');
+const bulkPreview     = document.getElementById('bulk-preview');
+const bulkPreviewList = document.getElementById('bulk-preview-list');
+const bulkCount       = document.getElementById('bulk-count');
+const btnBulkIssue    = document.getElementById('btn-bulk-issue');
+const bulkFeedback    = document.getElementById('bulk-feedback');
+
+bulkToggle.addEventListener('click', () => {
+  const open = bulkPanel.classList.toggle('open');
+  bulkToggle.textContent = open ? '▲ Hide' : '▼ Enter patient list';
+  if (open) bulkTextarea.focus();
+});
+
+// Parse bulk text: lines starting with * are urgent
+function parseBulk(text) {
+  return text.split('\n')
+    .map(line => {
+      let urgent = false;
+      let trimmed = line.trim();
+      if (trimmed.startsWith('*') || trimmed.startsWith('!')) {
+        urgent = true;
+        trimmed = trimmed.slice(1).trim();
+      }
+      const parts = trimmed.split('|');
+      return {
+        patientName:   parts[0].trim(),
+        patientNameML: (parts[1] || '').trim(),
+        priority:      urgent ? 'urgent' : 'normal'
+      };
+    })
+    .filter(p => p.patientName || p.patientNameML);
+}
+
+bulkTextarea.addEventListener('input', () => {
+  const patients = parseBulk(bulkTextarea.value);
+  if (patients.length === 0) {
+    bulkPreview.style.display = 'none';
+    btnBulkIssue.disabled = true;
+    return;
+  }
+  bulkCount.textContent = patients.length;
+  bulkPreviewList.innerHTML = patients.map((p, i) => `
+    <div class="bulk-preview-row${p.priority === 'urgent' ? ' urgent' : ''}">
+      <span class="bulk-preview-num">${i + 1}</span>
+      ${p.priority === 'urgent' ? '<span class="bulk-preview-urgent">⚡</span>' : ''}
+      <span>${p.patientName || '<em class="text-muted">no English name</em>'}</span>
+      ${p.patientNameML ? `<span class="bulk-preview-ml">· ${p.patientNameML}</span>` : ''}
+    </div>
+  `).join('');
+  bulkPreview.style.display = 'block';
+  btnBulkIssue.disabled = false;
+});
+
+btnBulkIssue.addEventListener('click', async () => {
+  const patients = parseBulk(bulkTextarea.value);
+  if (!patients.length) return;
+
+  btnBulkIssue.disabled = true;
+  btnBulkIssue.textContent = 'Issuing…';
+
+  const data = await apiPost('/api/tokens/bulk', { patients });
+
+  if (data.success) {
+    bulkFeedback.textContent = `✓ ${data.count} tokens issued (${pad(data.issued[0].tokenNumber)}–${pad(data.issued[data.count - 1].tokenNumber)})`;
+    bulkTextarea.value = '';
+    bulkPreview.style.display = 'none';
+    setTimeout(() => bulkFeedback.textContent = '', 4000);
+  } else {
+    bulkFeedback.textContent = data.message || 'Error issuing tokens';
+  }
+
+  btnBulkIssue.disabled = false;
+  btnBulkIssue.textContent = 'Issue All Tokens';
+});
+</script>
+</body>
+</html>
