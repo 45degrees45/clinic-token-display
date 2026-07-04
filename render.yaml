@@ -1,9 +1,3 @@
-databases:
-  - name: clinic-token-db
-    plan: free
-    databaseName: clinicqueue
-    user: clinicuser
-
 services:
   - type: web
     name: clinic-token-display
@@ -15,6 +9,4 @@ services:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        fromDatabase:
-          name: clinic-token-db
-          property: connectionString
+        sync: false   # set this manually in Render dashboard to your Neon connection string

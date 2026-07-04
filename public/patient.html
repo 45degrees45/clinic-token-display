@@ -60,11 +60,12 @@
 <div class="container px-3 pb-5">
 
   <!-- Check-in form (shown before token is issued) -->
-  <div id="checkin-section" class="my-token-card mb-3">
+  <div id="checkin-section" class="my-token-card mb-3" style="text-align:center;">
     <div class="fw-semibold fs-5 mb-1">Get a Token Number</div>
-    <div class="text-muted small mb-3">Enter your name to join the queue</div>
-    <input type="text" class="form-control mb-2" id="patient-name-input" placeholder="Your name (optional)" autocomplete="off">
-    <button class="btn btn-primary w-100" id="btn-checkin">Join Queue</button>
+    <div class="text-muted small mb-3">Tap the button to join the queue</div>
+    <button class="btn btn-primary w-100" id="btn-checkin" style="font-size:1.3rem; padding:1rem;">
+      Get Token
+    </button>
   </div>
 
   <!-- My token (shown after check-in) -->
@@ -114,6 +115,33 @@ socket.emit('join-room', ROOM_CODE);
 let myTokenNumber = null;
 let avgMinutes = 5;
 
+// ── Device identity ──────────────────────────────────────────────────────────
+function getDeviceId() {
+  let id = localStorage.getItem('tokenq_did');
+  if (!id) {
+    id = 'dev_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+    localStorage.setItem('tokenq_did', id);
+  }
+  return id;
+}
+
+function getFingerprint() {
+  const raw = [
+    navigator.userAgent.substring(0, 80),
+    navigator.language,
+    screen.width + 'x' + screen.height,
+    Intl.DateTimeFormat().resolvedOptions().timeZone,
+    navigator.hardwareConcurrency || 0,
+    navigator.deviceMemory || 0,
+  ].join('|');
+  let h = 0;
+  for (let i = 0; i < raw.length; i++) { h = Math.imul(31, h) + raw.charCodeAt(i) | 0; }
+  return 'fp_' + Math.abs(h).toString(36);
+}
+
+const DEVICE_ID   = getDeviceId();
+const FINGERPRINT = getFingerprint();
+
 function renderStatus(data) {
   document.getElementById('clinic-name').textContent = data.clinicName || 'Clinic';
   avgMinutes = data.avgMinutesPerPatient || 5;
@@ -143,28 +171,47 @@ function renderStatus(data) {
   }
 }
 
+function showMyToken(tokenNumber) {
+  myTokenNumber = tokenNumber;
+  document.getElementById('my-token-number').textContent = String(tokenNumber).padStart(3, '0');
+  document.getElementById('checkin-section').style.display = 'none';
+  document.getElementById('my-token-section').style.display = 'block';
+}
+
 document.getElementById('btn-checkin').addEventListener('click', async () => {
-  const name = document.getElementById('patient-name-input').value.trim();
+  const btn = document.getElementById('btn-checkin');
+  btn.disabled = true;
   const res = await fetch(`${API}/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ patientName: name })
+    body: JSON.stringify({ deviceId: DEVICE_ID, fingerprint: FINGERPRINT })
   });
   const data = await res.json();
+  btn.disabled = false;
   if (data.success) {
-    myTokenNumber = data.tokenNumber;
-    document.getElementById('my-token-number').textContent = String(data.tokenNumber).padStart(3, '0');
-    document.getElementById('checkin-section').style.display = 'none';
-    document.getElementById('my-token-section').style.display = 'block';
-    // Fetch fresh status to update position
+    showMyToken(data.tokenNumber);
     const statusRes = await fetch(`${API}/status`);
     renderStatus(await statusRes.json());
+  } else if (data.duplicate) {
+    // Already have a token — show it instead of an error
+    showMyToken(data.existingToken);
+    const statusRes = await fetch(`${API}/status`);
+    renderStatus(await statusRes.json());
+  } else {
+    alert(data.message || 'Could not join queue. Please try again.');
   }
 });
 
-document.getElementById('patient-name-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') document.getElementById('btn-checkin').click();
-});
+// On page load: check if this device already has a token and restore it
+(async () => {
+  try {
+    const res = await fetch(`${API}/my-token?deviceId=${encodeURIComponent(DEVICE_ID)}&fingerprint=${encodeURIComponent(FINGERPRINT)}`);
+    const data = await res.json();
+    if (data.found && (data.status === 'waiting' || data.status === 'called')) {
+      showMyToken(data.tokenNumber);
+    }
+  } catch (e) {}
+})();
 
 socket.on('queue-updated', renderStatus);
 socket.on('token-called',  renderStatus);
