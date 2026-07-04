@@ -18,6 +18,18 @@ if (!fs.existsSync(ROOMS_DIR)) fs.mkdirSync(ROOMS_DIR, { recursive: true });
 
 const rooms = new Map(); // code → room state
 
+// Safety limits
+const LIMITS = {
+  maxRooms:          100,   // total clinic rooms on this server
+  maxQueueSize:      100,   // waiting patients per clinic
+  rateWindowMs:    60_000,  // 1-minute window for rate limiting
+  rateMaxTokens:      10,   // max tokens issued per IP per minute
+  deviceCooldownMs: 15 * 60_000, // 15 min before same device can get another token
+};
+
+// IP-based rate limiting: ip → { count, windowStart }
+const ipRateMap = new Map();
+
 function getTodayDate() {
   return new Date().toISOString().split('T')[0];
 }
@@ -101,6 +113,40 @@ function getStatus(room) {
   };
 }
 
+// Find an existing token for a device — blocks if still in queue OR issued within cooldown window
+function findDeviceToken(room, deviceId, fingerprint) {
+  if (!deviceId && !fingerprint) return null;
+  const now = Date.now();
+  return room.tokens.find(t => {
+    const idMatch = deviceId   && t.deviceId    === deviceId;
+    const fpMatch = fingerprint && t.fingerprint === fingerprint;
+    if (!idMatch && !fpMatch) return false;
+    if (t.status === 'waiting' || t.status === 'called') return true; // still in queue
+    const age = now - new Date(t.createdAt).getTime();
+    return age < LIMITS.deviceCooldownMs; // completed but within cooldown
+  }) || null;
+}
+
+function checkIpRateLimit(ip) {
+  const now = Date.now();
+  const entry = ipRateMap.get(ip) || { count: 0, windowStart: now };
+  if (now - entry.windowStart > LIMITS.rateWindowMs) {
+    entry.count = 0;
+    entry.windowStart = now;
+  }
+  entry.count++;
+  ipRateMap.set(ip, entry);
+  return entry.count <= LIMITS.rateMaxTokens;
+}
+
+// Periodically clear stale rate-limit entries to prevent memory growth
+setInterval(() => {
+  const cutoff = Date.now() - LIMITS.rateWindowMs * 2;
+  for (const [ip, entry] of ipRateMap) {
+    if (entry.windowStart < cutoff) ipRateMap.delete(ip);
+  }
+}, 5 * 60_000);
+
 function requireRoom(req, res, next) {
   const room = rooms.get(req.params.code?.toUpperCase());
   if (!room) return res.status(404).json({ success: false, message: 'Clinic room not found' });
@@ -173,6 +219,9 @@ app.get('/info',  (req, res) => res.sendFile(path.join(__dirname, 'public', 'lan
 
 // ── Room creation ───────────────────────────────────────────────────────────
 app.post('/api/rooms/create', (req, res) => {
+  if (rooms.size >= LIMITS.maxRooms) {
+    return res.status(503).json({ success: false, message: 'Server is at capacity. Please try again later.' });
+  }
   const clinicName = (req.body.clinicName || '').trim() || 'My Clinic';
   let code;
   do { code = generateCode(); } while (rooms.has(code));
@@ -190,16 +239,66 @@ app.post('/api/rooms/create', (req, res) => {
   });
 });
 
+// ── Server stats ────────────────────────────────────────────────────────────
+app.get('/api/stats', (req, res) => {
+  const roomList = [...rooms.values()].map(r => ({
+    code: r.code,
+    clinicName: r.clinicName,
+    waiting: r.tokens.filter(t => t.status === 'waiting').length,
+    createdAt: r.createdAt,
+  }));
+  res.json({ totalRooms: rooms.size, rooms: roomList });
+});
+
 // ── Room API ────────────────────────────────────────────────────────────────
 app.get('/api/room/:code/status', requireRoom, (req, res) => res.json(getStatus(req.room)));
 
+// Check if a device already has an active token (used on page load to restore token)
+app.get('/api/room/:code/my-token', requireRoom, (req, res) => {
+  const { deviceId, fingerprint } = req.query;
+  if (!deviceId && !fingerprint) return res.json({ found: false });
+  const token = findDeviceToken(req.room, deviceId, fingerprint);
+  if (!token) return res.json({ found: false });
+  res.json({ found: true, tokenNumber: token.tokenNumber, status: token.status, patientName: token.patientName });
+});
+
 app.post('/api/room/:code/token', requireRoom, (req, res) => {
   const room = req.room;
+
+  // Queue size guard
+  const waitingCount = room.tokens.filter(t => t.status === 'waiting').length;
+  if (waitingCount >= LIMITS.maxQueueSize) {
+    return res.status(429).json({ success: false, message: `Queue is full (max ${LIMITS.maxQueueSize} patients). Please wait.` });
+  }
+
+  // IP rate limit guard (skip for admin bulk-add — only self-service patient endpoint)
+  const ip = req.ip || req.socket.remoteAddress;
+  if (!checkIpRateLimit(ip)) {
+    return res.status(429).json({ success: false, message: 'Too many requests. Please wait a minute.' });
+  }
+
+  // Device dedup guard — same browser/device can't get a second token within cooldown
+  const deviceId    = (req.body.deviceId    || '').trim().substring(0, 64) || null;
+  const fingerprint = (req.body.fingerprint || '').trim().substring(0, 64) || null;
+  const existing = findDeviceToken(room, deviceId, fingerprint);
+  if (existing) {
+    const minutesLeft = Math.ceil((LIMITS.deviceCooldownMs - (Date.now() - new Date(existing.createdAt).getTime())) / 60_000);
+    return res.status(409).json({
+      success: false,
+      duplicate: true,
+      message: existing.status === 'waiting' || existing.status === 'called'
+        ? 'You already have a token in this queue.'
+        : `Please wait ${minutesLeft} more minute(s) before getting a new token.`,
+      existingToken: existing.tokenNumber,
+      existingStatus: existing.status,
+    });
+  }
+
   const patientName   = (req.body.patientName   || '').trim() || null;
   const patientNameML = (req.body.patientNameML || '').trim() || null;
   const priority      = req.body.priority === 'urgent' ? 'urgent' : 'normal';
   room.lastTokenIssued++;
-  const token = { tokenNumber: room.lastTokenIssued, patientName, patientNameML, priority, status: 'waiting', createdAt: new Date().toISOString(), calledAt: null };
+  const token = { tokenNumber: room.lastTokenIssued, patientName, patientNameML, priority, status: 'waiting', createdAt: new Date().toISOString(), calledAt: null, deviceId, fingerprint };
   room.tokens.push(token);
   saveRoom(room);
   const status = getStatus(room);
@@ -212,8 +311,12 @@ app.post('/api/room/:code/tokens/bulk', requireRoom, (req, res) => {
   const room = req.room;
   const patients = Array.isArray(req.body.patients) ? req.body.patients : [];
   if (patients.length === 0) return res.json({ success: false, message: 'No patients provided' });
+  const waitingCount = room.tokens.filter(t => t.status === 'waiting').length;
+  const canAdd = LIMITS.maxQueueSize - waitingCount;
+  if (canAdd <= 0) return res.status(429).json({ success: false, message: `Queue is full (max ${LIMITS.maxQueueSize} patients).` });
+  const safePatients = patients.slice(0, canAdd);
   const issued = [];
-  for (const p of patients) {
+  for (const p of safePatients) {
     const patientName   = (p.patientName   || '').trim() || null;
     const patientNameML = (p.patientNameML || '').trim() || null;
     const priority      = p.priority === 'urgent' ? 'urgent' : 'normal';
