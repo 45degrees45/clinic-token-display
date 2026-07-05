@@ -106,6 +106,8 @@
   }
   .link-card:last-child { margin-right: 0; }
   .link-card.primary { border-color: #1565c0; background: #f0f5ff; }
+  a.link-card { text-decoration: none; color: inherit; cursor: pointer; }
+  a.link-card:hover { border-color: #1565c0; box-shadow: 0 2px 8px rgba(21,101,192,0.15); }
   .link-card img { width: 70px; height: 70px; display: block; margin-bottom: 7px; border-radius: 3px; }
   .link-label { font-size: 8.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: #64748b; margin-bottom: 2px; }
   .link-card.primary .link-label { color: #1565c0; }
@@ -229,27 +231,27 @@
 
     <h2>Links &amp; QR Codes</h2>
     <div class="links-wrap">
-      <div class="link-card primary">
+      <a class="link-card primary" href="https://clinic-token-display.onrender.com/r/DEMO" target="_blank">
         <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://clinic-token-display.onrender.com/r/DEMO" alt="QR">
         <div class="link-label">TV Display</div>
         <div class="link-url">/r/DEMO</div>
         <div class="link-desc">Laptop → F11 fullscreen</div>
-      </div><div class="link-card">
+      </a><a class="link-card" href="https://clinic-token-display.onrender.com/r/DEMO/admin" target="_blank">
         <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://clinic-token-display.onrender.com/r/DEMO/admin" alt="QR">
         <div class="link-label">Admin — Doctor's Phone</div>
         <div class="link-url">/r/DEMO/admin</div>
         <div class="link-desc">Keep open on your phone</div>
-      </div><div class="link-card">
+      </a><a class="link-card" href="https://clinic-token-display.onrender.com/r/DEMO/patient" target="_blank">
         <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://clinic-token-display.onrender.com/r/DEMO/patient" alt="QR">
         <div class="link-label">Patient View</div>
         <div class="link-url">/r/DEMO/patient</div>
         <div class="link-desc">Ask the doctor to open</div>
-      </div><div class="link-card">
+      </a><a class="link-card" href="https://clinic-token-display.onrender.com/pitch" target="_blank">
         <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://clinic-token-display.onrender.com/pitch" alt="QR">
         <div class="link-label">Pitch Deck</div>
         <div class="link-url">/pitch</div>
         <div class="link-desc">Send after the meeting</div>
-      </div>
+      </a>
     </div>
     <div style="font-size:10px;color:#94a3b8;margin-top:8px;">
       Scan QR or visit: <strong style="color:#475569;">clinic-token-display.onrender.com</strong> + path above
