@@ -256,15 +256,25 @@
   <div class="card border-0 shadow-sm mb-3">
     <div class="card-body">
       <div class="fw-semibold mb-2">🔊 Audio Announcement Language</div>
-      <select class="form-select" id="audio-lang-select">
-        <option value="en">English only</option>
-        <option value="nl">Dutch only (Nederlands)</option>
-        <option value="en+nl">English + Dutch</option>
-        <option value="en+ml">English + Malayalam</option>
-        <option value="nl+ml">Dutch + Malayalam</option>
-        <option value="en+nl+ml">English + Dutch + Malayalam</option>
-      </select>
-      <div class="text-muted small mt-1">Controls the TV display audio announcements</div>
+      <div class="d-flex flex-wrap gap-3" id="lang-checkboxes">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="lang-en" value="en">
+          <label class="form-check-label" for="lang-en">English</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="lang-nl" value="nl">
+          <label class="form-check-label" for="lang-nl">Dutch (Nederlands)</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="lang-hi" value="hi">
+          <label class="form-check-label" for="lang-hi">Hindi (हिन्दी)</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="lang-ml" value="ml">
+          <label class="form-check-label" for="lang-ml">Malayalam (മലയാളം)</label>
+        </div>
+      </div>
+      <div class="text-muted small mt-2">Controls the TV display audio announcements</div>
     </div>
   </div>
 
@@ -326,7 +336,7 @@ const btnPause = document.getElementById('btn-pause');
 
 function renderStatus(data) {
   document.getElementById('nav-clinic-name').textContent = data.clinicName || 'Clinic';
-  if (data.audioLang) audioLangSelect.value = data.audioLang;
+  if (data.audioLang) setLangValue(data.audioLang);
 
   // Pause button state
   if (data.paused) {
@@ -448,11 +458,25 @@ socket.on('queue-updated', renderStatus);
 socket.on('token-called',  renderStatus);
 socket.on('queue-reset',   renderStatus);
 
-// ── Audio language selector ──────────────────────
-const audioLangSelect = document.getElementById('audio-lang-select');
-audioLangSelect.addEventListener('change', async () => {
-  await apiPost(`${API}/settings`, { audioLang: audioLangSelect.value });
-  showToast('Audio language updated');
+// ── Audio language checkboxes ────────────────────
+const LANG_ORDER = ['en', 'nl', 'hi', 'ml'];
+const langCheckboxes = document.querySelectorAll('#lang-checkboxes input[type="checkbox"]');
+
+function getLangValue() {
+  const selected = LANG_ORDER.filter(l => document.getElementById(`lang-${l}`)?.checked);
+  return selected.length ? selected.join('+') : 'en';
+}
+
+function setLangValue(val) {
+  const langs = (val || 'en').split('+');
+  langCheckboxes.forEach(cb => { cb.checked = langs.includes(cb.value); });
+}
+
+langCheckboxes.forEach(cb => {
+  cb.addEventListener('change', async () => {
+    await apiPost(`${API}/settings`, { audioLang: getLangValue() });
+    showToast('Audio language updated');
+  });
 });
 
 // ── Bulk Entry ──────────────────────────────────

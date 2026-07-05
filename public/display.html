@@ -484,6 +484,12 @@ function announceToken(data) {
       lang: 'nl-NL'
     });
   }
+  if (langs.includes('hi')) {
+    queue.push({
+      text: name ? `टोकन ${num}. ${name}. अंदर आइए.` : `टोकन ${num}. अंदर आइए.`,
+      lang: 'hi-IN'
+    });
+  }
   if (langs.includes('ml')) {
     queue.push({
       text: nameML ? `ടോക്കൺ ${num}. ${nameML}. അകത്ത് വരൂ.` : `ടോക്കൺ ${num}. അകത്ത് വരൂ.`,

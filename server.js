@@ -402,11 +402,14 @@ app.post('/api/room/:code/pause', requireRoom, async (req, res) => {
   res.json({ success: true, paused: room.paused });
 });
 
-const VALID_AUDIO_LANGS = new Set(['en', 'nl', 'ml', 'en+nl', 'en+ml', 'nl+ml', 'en+nl+ml']);
+const VALID_LANG_CODES = new Set(['en', 'nl', 'hi', 'ml']);
+function isValidAudioLang(val) {
+  return val && val.split('+').every(l => VALID_LANG_CODES.has(l));
+}
 
 app.post('/api/room/:code/settings', requireRoom, async (req, res) => {
   const room = req.room;
-  if (req.body.audioLang && VALID_AUDIO_LANGS.has(req.body.audioLang)) {
+  if (req.body.audioLang && isValidAudioLang(req.body.audioLang)) {
     room.audioLang = req.body.audioLang;
   }
   await saveRoom(room);
