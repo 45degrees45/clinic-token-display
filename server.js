@@ -248,6 +248,7 @@ app.get('/admin',   (req, res) => res.redirect('/r/LOCAL/admin'));
 app.get('/patient', (req, res) => res.redirect('/r/LOCAL/patient'));
 app.get('/pitch', (req, res) => res.sendFile(path.join(__dirname, 'public', 'presentation.html')));
 app.get('/info',  (req, res) => res.sendFile(path.join(__dirname, 'public', 'landing.html')));
+app.get('/demo',  (req, res) => res.sendFile(path.join(__dirname, 'public', 'demo-guide.html')));
 
 // ── Server stats ─────────────────────────────────────────────────────────────
 app.get('/api/stats', (req, res) => {

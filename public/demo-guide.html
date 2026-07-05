@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TokenQ — Demo Guide for Doctors</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, 'Segoe UI', Arial, sans-serif;
+    background: white;
+    color: #1e293b;
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+
+  .page { max-width: 720px; margin: 0 auto; background: white; }
+
+  /* ── Header ── */
+  .header {
+    background: #1565c0;
+    color: white;
+    padding: 26px 36px 22px;
+  }
+  .logo-name { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+  .header-sub { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 1px; }
+  .tagline { margin-top: 10px; font-size: 16px; font-weight: 600; color: white; line-height: 1.4; }
+
+  /* ── Body ── */
+  .body { padding: 22px 36px 48px; }
+
+  /* ── Section heading ── */
+  h2 {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 8px;
+    margin-top: 18px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 3px;
+  }
+  h2:first-of-type { margin-top: 0; }
+
+  /* ── Opener ── */
+  .opener-box {
+    background: #f0fdf4;
+    border: 1.5px solid #16a34a;
+    border-radius: 8px;
+    padding: 11px 16px;
+  }
+  .opener-label {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.12em; color: #16a34a; margin-bottom: 4px;
+  }
+  .opener-text { font-size: 13px; font-style: italic; color: #166534; line-height: 1.5; }
+
+  /* ── Setup ── */
+  .setup-wrap { font-size: 0; }
+  .setup-step {
+    display: inline-block; width: 49%; vertical-align: top;
+    font-size: 12.5px; border: 1.5px solid #e2e8f0;
+    border-radius: 8px; padding: 10px 12px; color: #374151;
+  }
+  .setup-step:first-child { margin-right: 2%; }
+  .setup-num { font-size: 8.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin-bottom: 3px; }
+
+  /* ── Steps ── */
+  .step { display: table; width: 100%; margin-bottom: 7px; }
+  .step-num { display: table-cell; width: 26px; vertical-align: top; padding-top: 1px; }
+  .step-num-inner {
+    background: #1565c0; color: white; width: 20px; height: 20px;
+    border-radius: 50%; text-align: center; line-height: 20px;
+    font-size: 10px; font-weight: 800; display: inline-block;
+  }
+  .step-body { display: table-cell; vertical-align: top; }
+  .step-title { font-weight: 700; font-size: 13px; color: #0f172a; margin-bottom: 1px; }
+  .step-desc { font-size: 12px; color: #475569; line-height: 1.45; }
+  .step-quote {
+    margin-top: 3px; font-style: italic; color: #1565c0; font-size: 11.5px;
+    background: #f0f5ff; border-left: 3px solid #1565c0;
+    padding: 4px 9px; border-radius: 0 5px 5px 0;
+  }
+
+  /* ── Key facts ── */
+  .facts-wrap { font-size: 0; }
+  .fact {
+    display: inline-block; width: 32%; vertical-align: top;
+    font-size: 12.5px; border: 1.5px solid #e2e8f0;
+    border-radius: 8px; padding: 10px 6px; text-align: center;
+    margin-right: 2%;
+  }
+  .fact:last-child { margin-right: 0; }
+  .fact-num { font-size: 18px; font-weight: 800; color: #1565c0; line-height: 1; }
+  .fact-label { font-size: 10.5px; color: #64748b; margin-top: 3px; }
+
+  /* ── Links — 4 columns ── */
+  .links-wrap { font-size: 0; }
+  .link-card {
+    display: inline-block; width: 23.5%; vertical-align: top;
+    font-size: 12px; border: 1.5px solid #e2e8f0;
+    border-radius: 8px; padding: 10px 10px;
+    margin-right: 2%; page-break-inside: avoid;
+  }
+  .link-card:last-child { margin-right: 0; }
+  .link-card.primary { border-color: #1565c0; background: #f0f5ff; }
+  .link-card img { width: 70px; height: 70px; display: block; margin-bottom: 7px; border-radius: 3px; }
+  .link-label { font-size: 8.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: #64748b; margin-bottom: 2px; }
+  .link-card.primary .link-label { color: #1565c0; }
+  .link-url { font-size: 9.5px; color: #1565c0; font-weight: 600; overflow-wrap: break-word; word-break: break-word; line-height: 1.35; }
+  .link-desc { font-size: 10px; color: #64748b; margin-top: 2px; }
+
+  /* ── Footer ── */
+  .footer {
+    border-top: 1px solid #f1f5f9; padding: 12px 36px;
+    font-size: 10.5px; color: #94a3b8; overflow: hidden;
+  }
+  .footer-left { float: left; }
+  .footer-right { float: right; }
+
+  @media print {
+    .step-num-inner { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .opener-box     { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .header         { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .step-quote     { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .link-card.primary { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="logo-name">🏥 TokenQ</div>
+    <div class="header-sub">Smart Queue Management for Small Clinics</div>
+    <div class="tagline">No more calling names.<br>Patients see their token on the TV. You call next from your phone.</div>
+  </div>
+
+  <div class="body">
+
+    <h2>Open the Conversation</h2>
+    <div class="opener-box">
+      <div class="opener-label">Say this first</div>
+      <div class="opener-text">"Can I show you something that takes 2 minutes? It'll stop you from having to shout patient names across the waiting room."</div>
+    </div>
+
+    <h2>Before the Meeting — Setup (30 seconds)</h2>
+    <div class="setup-wrap">
+      <div class="setup-step">
+        <div class="setup-num">Step 1</div>
+        Open the <strong>TV Display</strong> link on your laptop. Press <strong>F11</strong> for fullscreen.
+      </div><div class="setup-step">
+        <div class="setup-num">Step 2</div>
+        Open the <strong>Admin</strong> link on your phone. Keep it in your hand.
+      </div>
+    </div>
+
+    <h2>The Demo — 2 Minutes</h2>
+
+    <div class="step">
+      <div class="step-num"><span class="step-num-inner">1</span></div>
+      <div class="step-body">
+        <div class="step-title">Show the waiting room screen</div>
+        <div class="step-desc">Point to the large token number and "Up Next" card on your laptop.</div>
+        <div class="step-quote">"This goes on any TV. Patients see their number. No more shouting names."</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"><span class="step-num-inner">2</span></div>
+      <div class="step-body">
+        <div class="step-title">Press "Call Next Patient" on your phone</div>
+        <div class="step-desc">The TV updates instantly — new name, new number, audio announcement plays.</div>
+        <div class="step-quote">"You press this from your chair, from your consulting room, from anywhere in the clinic."</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"><span class="step-num-inner">3</span></div>
+      <div class="step-body">
+        <div class="step-title">Show Urgent marking</div>
+        <div class="step-desc">Issue a new token, tick "Mark as Urgent" — that patient jumps to the front automatically.</div>
+        <div class="step-quote">"For elderly patients, chest pain, emergencies — one tap and they're next."</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"><span class="step-num-inner">4</span></div>
+      <div class="step-body">
+        <div class="step-title">Show the patient view</div>
+        <div class="step-desc">Open the Patient link on a second phone. They see their token number and estimated wait time.</div>
+        <div class="step-quote">"Patients check their position from their own phone — no app, just a QR code at reception."</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"><span class="step-num-inner">5</span></div>
+      <div class="step-body">
+        <div class="step-title">Show the language selector</div>
+        <div class="step-desc">Tick English + Dutch or English + Hindi in admin. Press Call Next — TV announces in both languages.</div>
+        <div class="step-quote">"Works in English, Dutch, Hindi, or Malayalam — whichever language your patients speak."</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"><span class="step-num-inner">6</span></div>
+      <div class="step-body">
+        <div class="step-title">Close with setup</div>
+        <div class="step-desc">Any old TV, an HDMI cable, a cheap streaming stick.</div>
+        <div class="step-quote">"5 minutes to set up. No monthly fees — one-time setup."</div>
+      </div>
+    </div>
+
+    <h2>Key Facts</h2>
+    <div class="facts-wrap">
+      <div class="fact">
+        <div class="fact-num">Free</div>
+        <div class="fact-label">No monthly subscription</div>
+      </div><div class="fact">
+        <div class="fact-num">5 min</div>
+        <div class="fact-label">Setup time</div>
+      </div><div class="fact">
+        <div class="fact-num">Any TV</div>
+        <div class="fact-label">No special hardware</div>
+      </div>
+    </div>
+
+    <h2>Links &amp; QR Codes</h2>
+    <div class="links-wrap">
+      <div class="link-card primary">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://clinic-token-display.onrender.com/r/DEMO" alt="QR">
+        <div class="link-label">TV Display</div>
+        <div class="link-url">/r/DEMO</div>
+        <div class="link-desc">Laptop → F11 fullscreen</div>
+      </div><div class="link-card">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://clinic-token-display.onrender.com/r/DEMO/admin" alt="QR">
+        <div class="link-label">Admin — Doctor's Phone</div>
+        <div class="link-url">/r/DEMO/admin</div>
+        <div class="link-desc">Keep open on your phone</div>
+      </div><div class="link-card">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://clinic-token-display.onrender.com/r/DEMO/patient" alt="QR">
+        <div class="link-label">Patient View</div>
+        <div class="link-url">/r/DEMO/patient</div>
+        <div class="link-desc">Ask the doctor to open</div>
+      </div><div class="link-card">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://clinic-token-display.onrender.com/pitch" alt="QR">
+        <div class="link-label">Pitch Deck</div>
+        <div class="link-url">/pitch</div>
+        <div class="link-desc">Send after the meeting</div>
+      </div>
+    </div>
+    <div style="font-size:10px;color:#94a3b8;margin-top:8px;">
+      Scan QR or visit: <strong style="color:#475569;">clinic-token-display.onrender.com</strong> + path above
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <span class="footer-left">TokenQ · Smart Queue for Small Clinics</span>
+    <span class="footer-right">clinic-token-display.onrender.com</span>
+  </div>
+
+</div>
+</body>
+</html>
