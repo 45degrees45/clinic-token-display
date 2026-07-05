@@ -6,146 +6,195 @@
 <title>Admin — Token Queue</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
 <style>
-  body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+  body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; font-size: 17px; }
   .navbar { background: #1a56db !important; }
+  .navbar-brand { font-size: 1.25rem !important; }
+  #nav-date { font-size: 1rem !important; }
 
-  /* Big call-next button */
+  /* ── CALL NEXT — primary action ── */
   #btn-next {
-    font-size: 1.6rem;
-    font-weight: 700;
-    padding: 1.1rem;
-    border-radius: 16px;
-    letter-spacing: 0.03em;
-    box-shadow: 0 4px 16px rgba(22,163,74,0.35);
+    font-size: clamp(1.7rem, 6vw, 2.2rem);
+    font-weight: 800;
+    padding: 1.3rem 1rem;
+    border-radius: 18px;
+    letter-spacing: 0.02em;
+    box-shadow: 0 4px 20px rgba(22,163,74,0.4);
+    min-height: 80px;
   }
   #btn-next:active { transform: scale(0.97); }
 
-  /* Current/next status cards */
+  /* ── NOW SERVING card ── */
   .serving-card {
     background: linear-gradient(135deg, #1a56db, #1e429f);
     color: white;
-    border-radius: 14px;
-    padding: 1rem 1.2rem;
+    border-radius: 16px;
+    padding: 1.1rem 1.3rem;
+  }
+  .serving-card .sub {
+    font-size: clamp(0.75rem, 2.5vw, 0.9rem);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    opacity: 0.6;
   }
   .serving-card .token-num {
-    font-size: 2.8rem;
-    font-weight: 800;
+    font-size: clamp(3.2rem, 14vw, 5.5rem);
+    font-weight: 900;
     line-height: 1;
   }
   .serving-card .patient-nm {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-top: 0.15rem;
-    opacity: 0.9;
+    font-size: clamp(1.1rem, 4.5vw, 1.5rem);
+    font-weight: 700;
+    margin-top: 0.2rem;
+    opacity: 0.95;
   }
-  .serving-card .sub { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.15em; opacity: 0.6; }
 
+  /* ── UP NEXT card ── */
   .next-card {
     background: white;
     border: 2px solid #e5e7eb;
-    border-radius: 14px;
-    padding: 1rem 1.2rem;
+    border-radius: 16px;
+    padding: 1.1rem 1.3rem;
   }
-  .next-card .token-num { font-size: 2.2rem; font-weight: 800; color: #374151; line-height: 1; }
-  .next-card .patient-nm { font-size: 1rem; font-weight: 600; color: #374151; margin-top: 0.15rem; }
-  .next-card .sub { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.15em; color: #9ca3af; }
+  .next-card .sub {
+    font-size: clamp(0.75rem, 2.5vw, 0.9rem);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #9ca3af;
+  }
+  .next-card .token-num {
+    font-size: clamp(2.5rem, 11vw, 4.5rem);
+    font-weight: 900;
+    color: #374151;
+    line-height: 1;
+  }
+  .next-card .patient-nm {
+    font-size: clamp(1rem, 4vw, 1.3rem);
+    font-weight: 700;
+    color: #374151;
+    margin-top: 0.2rem;
+  }
 
+  /* ── Recall / Pause / Skip ── */
   .btn-action {
-    font-size: 1rem;
-    padding: 0.7rem 1rem;
-    border-radius: 12px;
-    font-weight: 600;
+    font-size: clamp(1rem, 3.8vw, 1.25rem);
+    font-weight: 700;
+    padding: 1rem 0.4rem;
+    border-radius: 14px;
+    min-height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
   }
 
-  /* Pause button states */
   #btn-pause.is-paused {
     background: #dc2626;
     border-color: #dc2626;
     color: white;
   }
 
+  /* ── Queue list ── */
   .queue-item {
     background: white;
-    border-radius: 10px;
-    padding: 0.65rem 1rem;
-    margin-bottom: 0.4rem;
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.5rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     box-shadow: 0 1px 3px rgba(0,0,0,0.07);
   }
-  .queue-item.urgent-row { border-left: 3px solid #ef4444; }
+  .queue-item.urgent-row { border-left: 4px solid #ef4444; }
   .queue-item .badge-num {
     background: #e8eeff;
     color: #1a56db;
-    font-weight: 700;
-    font-size: 0.95rem;
-    padding: 0.35rem 0.7rem;
-    border-radius: 7px;
-    min-width: 3rem;
+    font-weight: 800;
+    font-size: 1.05rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    min-width: 3.2rem;
     text-align: center;
+    flex-shrink: 0;
   }
   .queue-item.urgent-row .badge-num { background: #fee2e2; color: #dc2626; }
+  .queue-item .patient-text { font-size: 1rem; font-weight: 500; color: #374151; }
+  .queue-item .pos-text { font-size: 0.95rem; color: #9ca3af; font-weight: 500; }
 
   .toast-container { z-index: 9999; }
 
-  /* 16px minimum on all inputs — prevents iOS auto-zoom on focus */
-  .form-control, .form-control:focus { font-size: 16px !important; border-radius: 10px; }
-
-  /* Keyboard shortcut hint — desktop only */
-  .key-hint { font-size: 0.7rem; color: #9ca3af; margin-top: 0.3rem; }
-
-  /* Status cards — bigger token numbers */
-  .serving-card .token-num { font-size: clamp(2.2rem, 8vw, 3.5rem); }
-  .next-card .token-num    { font-size: clamp(1.8rem, 7vw, 2.8rem); }
-  .serving-card .patient-nm,
-  .next-card .patient-nm   { font-size: clamp(0.95rem, 3.5vw, 1.1rem); }
-
-  /* Issue button — full width on small screens */
-  @media (max-width: 480px) {
-    #issue-input-row { flex-direction: column; gap: 0.5rem; }
-    #issue-input-row .form-control { border-radius: 10px !important; }
-    #btn-issue { width: 100%; border-radius: 10px !important; }
+  /* Inputs — 18px prevents iOS zoom, looks bigger too */
+  .form-control, .form-control:focus {
+    font-size: 18px !important;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
   }
 
-  /* Urgent checkbox label */
+  /* Card section titles */
+  .card-title-lg { font-size: 1.1rem; font-weight: 700; color: #1e293b; }
+
+  /* Issue button */
+  #btn-issue {
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    white-space: nowrap;
+  }
+
+  /* Urgent checkbox */
   .urgent-check-label {
-    font-size: 0.9rem;
+    font-size: 1.05rem;
     color: #dc2626;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     user-select: none;
   }
+  #issue-urgent { width: 1.4rem !important; height: 1.4rem !important; }
+
+  /* Language checkboxes */
+  #lang-checkboxes .form-check { padding-left: 0; display: flex; align-items: center; gap: 0.5rem; }
+  #lang-checkboxes .form-check-input { width: 1.4rem; height: 1.4rem; margin: 0; flex-shrink: 0; }
+  #lang-checkboxes .form-check-label { font-size: 1.05rem; font-weight: 500; cursor: pointer; }
+
+  /* Keyboard shortcut hint — desktop only */
+  .key-hint { font-size: 0.8rem; color: #9ca3af; margin-top: 0.3rem; }
+
+  /* Issue button full width on mobile */
+  @media (max-width: 480px) {
+    #issue-input-row { flex-direction: column; gap: 0.5rem; }
+    #issue-input-row .form-control { border-radius: 12px !important; }
+    #btn-issue { width: 100%; border-radius: 12px !important; }
+  }
 
   /* Bulk entry */
-  #bulk-toggle { font-size: 0.9rem; color: #1a56db; background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline; }
+  #bulk-toggle { font-size: 1rem; color: #1a56db; background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline; font-weight: 600; }
   #bulk-panel { display: none; }
   #bulk-panel.open { display: block; }
   #bulk-textarea {
-    font-size: 16px !important;
-    border-radius: 10px;
+    font-size: 17px !important;
+    border-radius: 12px;
     resize: vertical;
     min-height: 160px;
     font-family: 'Segoe UI', monospace;
-    line-height: 1.6;
+    line-height: 1.7;
   }
   .bulk-preview-row {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.35rem 0;
+    padding: 0.45rem 0;
     border-bottom: 1px solid #f3f4f6;
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
   .bulk-preview-row:last-child { border-bottom: none; }
   .bulk-preview-num {
     background: #e8eeff;
     color: #1a56db;
     font-weight: 700;
-    font-size: 0.8rem;
-    padding: 0.2rem 0.55rem;
-    border-radius: 5px;
-    min-width: 2.2rem;
+    font-size: 0.9rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    min-width: 2.4rem;
     text-align: center;
     flex-shrink: 0;
   }
@@ -153,13 +202,16 @@
   .bulk-preview-urgent {
     background: #fee2e2;
     color: #dc2626;
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     font-weight: 700;
-    padding: 0.1em 0.4em;
+    padding: 0.1em 0.5em;
     border-radius: 4px;
     flex-shrink: 0;
   }
-  .bulk-preview-ml { color: #6b7280; font-size: 0.85rem; }
+  .bulk-preview-ml { color: #6b7280; font-size: 0.95rem; }
+
+  /* Reset button — big enough to tap but clearly destructive */
+  #btn-reset { font-size: 1rem; padding: 0.6rem 1.5rem; border-radius: 10px; }
 </style>
 </head>
 <body>
@@ -373,10 +425,10 @@ function renderStatus(data) {
         <div class="queue-item${isUrgent ? ' urgent-row' : ''}">
           <div class="d-flex align-items-center gap-2">
             <span class="badge-num">${pad(t.tokenNumber)}</span>
-            <span class="text-muted small">${t.patientName || '—'}</span>
-            ${isUrgent ? '<span class="badge bg-danger" style="font-size:0.65rem;">⚡ Urgent</span>' : ''}
+            <span class="patient-text">${t.patientName || '—'}</span>
+            ${isUrgent ? '<span class="badge bg-danger" style="font-size:0.75rem;">⚡ Urgent</span>' : ''}
           </div>
-          <span class="text-muted small">#${i + 1}</span>
+          <span class="pos-text">#${i + 1}</span>
         </div>
       `;
     }).join('');
