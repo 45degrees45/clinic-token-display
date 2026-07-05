@@ -165,6 +165,7 @@
     font-weight: 400;
   }
 
+  .patient-name-nl,
   .patient-name-ml {
     font-size: clamp(1.2rem, 9vh, 12vh);
     font-weight: 600;
@@ -174,6 +175,7 @@
     max-width: 100%;
     flex-shrink: 0;
   }
+  .now-serving-card.idle .patient-name-nl,
   .now-serving-card.idle .patient-name-ml { display: none; }
 
   /* ── UP NEXT section ── */
@@ -221,6 +223,7 @@
     line-height: 1.15;
   }
 
+  .next-name-nl,
   .next-name-ml {
     font-size: clamp(0.9rem, 3.5vh, 4.5vh);
     font-weight: 600;
@@ -356,6 +359,7 @@
       <div class="patient-label">Token No. &nbsp;<span class="ml">ടോക്കൺ നം.</span> &nbsp;<span class="hi">टोकन नं.</span></div>
       <div class="token-num" id="cur-token">—</div>
       <div class="patient-name" id="cur-name">കാത്തിരിക്കുന്നു…</div>
+      <div class="patient-name-nl" id="cur-name-nl"></div>
       <div class="patient-name-ml" id="cur-name-ml"></div>
     </div>
   </div>
@@ -373,6 +377,7 @@
         </div>
         <div class="next-name next-empty" id="next-name">ആരും കാത്തിരിക്കുന്നില്ല</div>
         <div class="next-urgent" id="next-urgent">⚡ Urgent</div>
+        <div class="next-name-nl" id="next-name-nl"></div>
         <div class="next-name-ml" id="next-name-ml"></div>
       </div>
     </div>
@@ -426,10 +431,12 @@ soundBanner.addEventListener('click', unlockAudio);
 const nowCard      = document.getElementById('now-card');
 const curToken     = document.getElementById('cur-token');
 const curName      = document.getElementById('cur-name');
+const curNameNl    = document.getElementById('cur-name-nl');
 const curNameMl    = document.getElementById('cur-name-ml');
 const urgentBadge  = document.getElementById('urgent-badge');
 const nextToken    = document.getElementById('next-token');
 const nextName     = document.getElementById('next-name');
+const nextNameNl   = document.getElementById('next-name-nl');
 const nextNameMl   = document.getElementById('next-name-ml');
 const nextUrgent   = document.getElementById('next-urgent');
 const clinicEl     = document.getElementById('clinic-name');
@@ -468,6 +475,7 @@ function announceToken(data) {
 
   const num    = data.currentToken;
   const name   = data.currentPatientName;
+  const nameNL = data.currentPatientNameNL || name;
   const nameML = data.currentPatientNameML;
   const langs  = currentAudioLang.split('+');
 
@@ -480,7 +488,7 @@ function announceToken(data) {
   }
   if (langs.includes('nl')) {
     queue.push({
-      text: name ? `Token ${num}. ${name}. U kunt naar binnen.` : `Token ${num}. U kunt naar binnen.`,
+      text: nameNL ? `Token ${num}. ${nameNL}. U kunt naar binnen.` : `Token ${num}. U kunt naar binnen.`,
       lang: 'nl-NL'
     });
   }
@@ -521,12 +529,14 @@ function renderStatus(data) {
     curToken.textContent  = String(data.currentToken).padStart(3, '0');
     curName.textContent   = data.currentPatientName || ('Patient ' + data.currentToken);
     curName.classList.remove('next-empty');
+    curNameNl.textContent = data.currentPatientNameNL || '';
     curNameMl.textContent = data.currentPatientNameML || '';
     urgentBadge.classList.toggle('show', data.currentPriority === 'urgent');
   } else {
     nowCard.classList.add('idle');
     curToken.textContent  = '—';
     curName.textContent   = 'കാത്തിരിക്കുന്നു…';
+    curNameNl.textContent = '';
     curNameMl.textContent = '';
     urgentBadge.classList.remove('show');
   }
@@ -535,12 +545,14 @@ function renderStatus(data) {
     nextToken.textContent  = String(data.nextToken).padStart(3, '0');
     nextName.textContent   = data.nextPatientName || ('Patient ' + data.nextToken);
     nextName.classList.remove('next-empty');
+    nextNameNl.textContent = data.nextPatientNameNL || '';
     nextNameMl.textContent = data.nextPatientNameML || '';
     nextUrgent.classList.toggle('show', data.nextPriority === 'urgent');
   } else {
     nextToken.textContent  = '—';
     nextName.textContent   = 'ആരും കാത്തിരിക്കുന്നില്ല';
     nextName.classList.add('next-empty');
+    nextNameNl.textContent = '';
     nextNameMl.textContent = '';
     nextUrgent.classList.remove('show');
   }

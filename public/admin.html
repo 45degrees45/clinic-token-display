@@ -216,6 +216,7 @@
         <input type="text" class="form-control" id="patient-name" placeholder="Patient name (English)" autocomplete="off" inputmode="text">
         <button class="btn btn-primary px-4" id="btn-issue">Issue</button>
       </div>
+      <input type="text" class="form-control mb-2" id="patient-name-nl" placeholder="Dutch name · Nederlandse naam (optioneel)" autocomplete="off" lang="nl" inputmode="text">
       <input type="text" class="form-control mb-2" id="patient-name-ml" placeholder="Malayalam name · മലയാളം പേര് (optional)" autocomplete="off" lang="ml" inputmode="text">
       <div class="d-flex align-items-center gap-2 mb-1">
         <input class="form-check-input m-0" type="checkbox" id="issue-urgent" style="width:1.2rem;height:1.2rem;">
@@ -415,10 +416,12 @@ document.getElementById('btn-skip').addEventListener('click', async () => {
 
 document.getElementById('btn-issue').addEventListener('click', async () => {
   const nameInput   = document.getElementById('patient-name');
+  const nameNLInput = document.getElementById('patient-name-nl');
   const nameMLInput = document.getElementById('patient-name-ml');
   const urgentInput = document.getElementById('issue-urgent');
   const data = await apiPost(`${API}/token`, {
     patientName:   nameInput.value.trim(),
+    patientNameNL: nameNLInput.value.trim(),
     patientNameML: nameMLInput.value.trim(),
     priority:      urgentInput.checked ? 'urgent' : 'normal'
   });
@@ -426,17 +429,17 @@ document.getElementById('btn-issue').addEventListener('click', async () => {
     const fb = document.getElementById('issue-feedback');
     fb.textContent = `Token ${pad(data.tokenNumber)} issued — Position #${data.queuePosition}`;
     nameInput.value   = '';
+    nameNLInput.value = '';
     nameMLInput.value = '';
     urgentInput.checked = false;
     setTimeout(() => fb.textContent = '', 3000);
   }
 });
 
-document.getElementById('patient-name').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') document.getElementById('btn-issue').click();
-});
-document.getElementById('patient-name-ml').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') document.getElementById('btn-issue').click();
+['patient-name', 'patient-name-nl', 'patient-name-ml'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('btn-issue').click();
+  });
 });
 
 document.getElementById('btn-reset').addEventListener('click', async () => {

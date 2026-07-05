@@ -140,10 +140,12 @@ function getStatus(room) {
     currentToken: room.currentToken,
     currentPatientName:   current?.patientName   || null,
     currentPatientNameML: current?.patientNameML || null,
+    currentPatientNameNL: current?.patientNameNL || null,
     currentPriority: current?.priority || 'normal',
     nextToken: next?.tokenNumber || 0,
     nextPatientName:   next?.patientName   || null,
     nextPatientNameML: next?.patientNameML || null,
+    nextPatientNameNL: next?.patientNameNL || null,
     nextPriority: next?.priority || 'normal',
     lastTokenIssued: room.lastTokenIssued,
     waitingCount: waiting.length,
@@ -208,19 +210,19 @@ async function seedDemoRoom() {
   const room = newRoom('DEMO', 'Kerala Health Clinic (Demo)');
   room.audioLang = 'en+nl';
   const patients = [
-    { name: 'Rajesh Kumar',    nameML: 'രാജേഷ് കുമാർ',   priority: 'normal', status: 'called'  },
-    { name: 'Meera Nair',      nameML: 'മീര നായർ',        priority: 'normal', status: 'waiting' },
-    { name: 'Suresh Babu',     nameML: 'സുരേഷ് ബാബു',     priority: 'normal', status: 'waiting' },
-    { name: 'Lakshmi Devi',    nameML: 'ലക്ഷ്മി ദേവി',    priority: 'urgent', status: 'waiting' },
-    { name: 'Mohammed Ansari', nameML: 'മുഹമ്മദ് അൻസാരി', priority: 'normal', status: 'waiting' },
-    { name: 'Priya Thomas',    nameML: 'പ്രിയ തോമസ്',     priority: 'normal', status: 'waiting' },
-    { name: 'Arun Krishnan',   nameML: 'അരുൺ കൃഷ്ണൻ',    priority: 'normal', status: 'waiting' },
+    { name: 'Rajesh Kumar',    nameML: 'രാജേഷ് കുമാർ',   nameNL: null,                priority: 'normal', status: 'called'  },
+    { name: 'Jan de Vries',    nameML: null,               nameNL: 'Jan de Vries',      priority: 'normal', status: 'waiting' },
+    { name: 'Suresh Babu',     nameML: 'സുരേഷ് ബാബു',     nameNL: null,                priority: 'normal', status: 'waiting' },
+    { name: 'Maria van Berg',  nameML: null,               nameNL: 'Maria van Berg',    priority: 'urgent', status: 'waiting' },
+    { name: 'Mohammed Ansari', nameML: 'മുഹമ്മദ് അൻസാരി', nameNL: null,                priority: 'normal', status: 'waiting' },
+    { name: 'Pieter Bakker',   nameML: null,               nameNL: 'Pieter Bakker',     priority: 'normal', status: 'waiting' },
+    { name: 'Arun Krishnan',   nameML: 'അരുൺ കൃഷ്ണൻ',    nameNL: null,                priority: 'normal', status: 'waiting' },
   ];
   patients.forEach(p => {
     room.lastTokenIssued++;
     room.tokens.push({
       tokenNumber: room.lastTokenIssued,
-      patientName: p.name, patientNameML: p.nameML,
+      patientName: p.name, patientNameML: p.nameML, patientNameNL: p.nameNL,
       priority: p.priority, status: p.status,
       createdAt: new Date().toISOString(),
       calledAt: p.status === 'called' ? new Date().toISOString() : null
@@ -317,9 +319,10 @@ app.post('/api/room/:code/token', requireRoom, async (req, res) => {
   }
   const patientName   = (req.body.patientName   || '').trim() || null;
   const patientNameML = (req.body.patientNameML || '').trim() || null;
+  const patientNameNL = (req.body.patientNameNL || '').trim() || null;
   const priority      = req.body.priority === 'urgent' ? 'urgent' : 'normal';
   room.lastTokenIssued++;
-  const token = { tokenNumber: room.lastTokenIssued, patientName, patientNameML, priority, status: 'waiting', createdAt: new Date().toISOString(), calledAt: null, deviceId, fingerprint };
+  const token = { tokenNumber: room.lastTokenIssued, patientName, patientNameML, patientNameNL, priority, status: 'waiting', createdAt: new Date().toISOString(), calledAt: null, deviceId, fingerprint };
   room.tokens.push(token);
   await saveRoom(room);
   const status = getStatus(room);
@@ -339,11 +342,12 @@ app.post('/api/room/:code/tokens/bulk', requireRoom, async (req, res) => {
   for (const p of patients.slice(0, canAdd)) {
     const patientName   = (p.patientName   || '').trim() || null;
     const patientNameML = (p.patientNameML || '').trim() || null;
+    const patientNameNL = (p.patientNameNL || '').trim() || null;
     const priority      = p.priority === 'urgent' ? 'urgent' : 'normal';
     room.lastTokenIssued++;
-    const token = { tokenNumber: room.lastTokenIssued, patientName, patientNameML, priority, status: 'waiting', createdAt: new Date().toISOString(), calledAt: null };
+    const token = { tokenNumber: room.lastTokenIssued, patientName, patientNameML, patientNameNL, priority, status: 'waiting', createdAt: new Date().toISOString(), calledAt: null };
     room.tokens.push(token);
-    issued.push({ tokenNumber: token.tokenNumber, patientName, patientNameML, priority });
+    issued.push({ tokenNumber: token.tokenNumber, patientName, patientNameML, patientNameNL, priority });
   }
   await saveRoom(room);
   io.to(room.code).emit('queue-updated', getStatus(room));
