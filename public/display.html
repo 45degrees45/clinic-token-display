@@ -459,15 +459,8 @@ function playDingDong() {
   } catch (e) {}
 }
 
-// ── TTS announcement — English first, then Malayalam ──
-function speak(text, lang) {
-  if (!window.speechSynthesis) return;
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang   = lang;
-  u.rate   = 0.88;
-  u.volume = 1;
-  speechSynthesis.speak(u);
-}
+// ── TTS announcement — chains languages set by admin ──
+let currentAudioLang = 'en';
 
 function announceToken(data) {
   if (!window.speechSynthesis) return;
@@ -476,20 +469,42 @@ function announceToken(data) {
   const num    = data.currentToken;
   const name   = data.currentPatientName;
   const nameML = data.currentPatientNameML;
+  const langs  = currentAudioLang.split('+');
 
-  const engText = name
-    ? `Token ${num}. ${name}. Please come in.`
-    : `Token ${num}. Please come in.`;
-  speak(engText, 'en-IN');
+  const queue = [];
+  if (langs.includes('en')) {
+    queue.push({
+      text: name ? `Token ${num}. ${name}. Please come in.` : `Token ${num}. Please come in.`,
+      lang: 'en-IN'
+    });
+  }
+  if (langs.includes('nl')) {
+    queue.push({
+      text: name ? `Token ${num}. ${name}. U kunt naar binnen.` : `Token ${num}. U kunt naar binnen.`,
+      lang: 'nl-NL'
+    });
+  }
+  if (langs.includes('ml')) {
+    queue.push({
+      text: nameML ? `ടോക്കൺ ${num}. ${nameML}. അകത്ത് വരൂ.` : `ടോക്കൺ ${num}. അകത്ത് വരൂ.`,
+      lang: 'ml-IN'
+    });
+  }
 
-  // Malayalam follows after English finishes (~3.5 s delay)
-  const mlText = nameML
-    ? `ടോക്കൺ ${num}. ${nameML}. അകത്ത് വരൂ.`
-    : `ടോക്കൺ ${num}. അകത്ത് വരൂ.`;
-  setTimeout(() => speak(mlText, 'ml-IN'), 3500);
+  function speakNext(i) {
+    if (i >= queue.length) return;
+    const u = new SpeechSynthesisUtterance(queue[i].text);
+    u.lang   = queue[i].lang;
+    u.rate   = 0.88;
+    u.volume = 1;
+    u.onend  = () => speakNext(i + 1);
+    speechSynthesis.speak(u);
+  }
+  speakNext(0);
 }
 
 function renderStatus(data) {
+  if (data.audioLang) currentAudioLang = data.audioLang;
   clinicEl.textContent = data.clinicName || 'Clinic';
 
   // Pause overlay

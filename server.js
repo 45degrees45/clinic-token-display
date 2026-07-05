@@ -76,6 +76,7 @@ function newRoom(code, clinicName) {
     tokens: [],
     paused: false,
     avgMinutesPerPatient: config.avgMinutesPerPatient || 5,
+    audioLang: 'en',
     createdAt: new Date().toISOString()
   };
 }
@@ -155,6 +156,7 @@ function getStatus(room) {
       priority: t.priority || 'normal'
     })),
     avgMinutesPerPatient: room.avgMinutesPerPatient || 5,
+    audioLang: room.audioLang || 'en',
     allTokens: room.tokens
   };
 }
@@ -204,6 +206,7 @@ async function ensureLocalRoom() {
 async function seedDemoRoom() {
   if (rooms.has('DEMO')) return;
   const room = newRoom('DEMO', 'Kerala Health Clinic (Demo)');
+  room.audioLang = 'en+nl';
   const patients = [
     { name: 'Rajesh Kumar',    nameML: 'രാജേഷ് കുമാർ',   priority: 'normal', status: 'called'  },
     { name: 'Meera Nair',      nameML: 'മീര നായർ',        priority: 'normal', status: 'waiting' },
@@ -233,7 +236,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ── Page routes ─────────────────────────────────────────────────────────────
-app.get('/',               (req, res) => res.sendFile(path.join(__dirname, 'public', 'setup.html')));
+app.get('/',               (req, res) => res.sendFile(path.join(__dirname, 'public', 'landing.html')));
 app.get('/setup',          (req, res) => res.sendFile(path.join(__dirname, 'public', 'setup.html')));
 app.get('/r/:code',        (req, res) => res.sendFile(path.join(__dirname, 'public', 'display.html')));
 app.get('/r/:code/admin',  (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
@@ -397,6 +400,18 @@ app.post('/api/room/:code/pause', requireRoom, async (req, res) => {
   await saveRoom(room);
   io.to(room.code).emit('queue-updated', getStatus(room));
   res.json({ success: true, paused: room.paused });
+});
+
+const VALID_AUDIO_LANGS = new Set(['en', 'nl', 'ml', 'en+nl', 'en+ml', 'nl+ml', 'en+nl+ml']);
+
+app.post('/api/room/:code/settings', requireRoom, async (req, res) => {
+  const room = req.room;
+  if (req.body.audioLang && VALID_AUDIO_LANGS.has(req.body.audioLang)) {
+    room.audioLang = req.body.audioLang;
+  }
+  await saveRoom(room);
+  io.to(room.code).emit('queue-updated', getStatus(room));
+  res.json({ success: true, audioLang: room.audioLang });
 });
 
 app.post('/api/room/:code/reset', requireRoom, async (req, res) => {

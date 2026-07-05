@@ -252,6 +252,22 @@
     </div>
   </div>
 
+  <!-- Audio Language -->
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+      <div class="fw-semibold mb-2">🔊 Audio Announcement Language</div>
+      <select class="form-select" id="audio-lang-select">
+        <option value="en">English only</option>
+        <option value="nl">Dutch only (Nederlands)</option>
+        <option value="en+nl">English + Dutch</option>
+        <option value="en+ml">English + Malayalam</option>
+        <option value="nl+ml">Dutch + Malayalam</option>
+        <option value="en+nl+ml">English + Dutch + Malayalam</option>
+      </select>
+      <div class="text-muted small mt-1">Controls the TV display audio announcements</div>
+    </div>
+  </div>
+
   <!-- Queue list -->
   <div class="card border-0 shadow-sm mb-3">
     <div class="card-body">
@@ -310,6 +326,7 @@ const btnPause = document.getElementById('btn-pause');
 
 function renderStatus(data) {
   document.getElementById('nav-clinic-name').textContent = data.clinicName || 'Clinic';
+  if (data.audioLang) audioLangSelect.value = data.audioLang;
 
   // Pause button state
   if (data.paused) {
@@ -430,6 +447,13 @@ document.addEventListener('keydown', (e) => {
 socket.on('queue-updated', renderStatus);
 socket.on('token-called',  renderStatus);
 socket.on('queue-reset',   renderStatus);
+
+// ── Audio language selector ──────────────────────
+const audioLangSelect = document.getElementById('audio-lang-select');
+audioLangSelect.addEventListener('change', async () => {
+  await apiPost(`${API}/settings`, { audioLang: audioLangSelect.value });
+  showToast('Audio language updated');
+});
 
 // ── Bulk Entry ──────────────────────────────────
 const bulkToggle      = document.getElementById('bulk-toggle');
