@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Token Display</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;600;700;900&family=Noto+Sans+Devanagari:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;600;700;900&family=Noto+Sans+Devanagari:wght@400;600;700;900&family=Vazirmatn:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -12,7 +12,7 @@
 
   body {
     background: #f0f4ff;
-    font-family: 'Noto Sans Malayalam', 'Noto Sans Devanagari', 'Segoe UI', Arial, sans-serif;
+    font-family: 'Noto Sans Malayalam', 'Noto Sans Devanagari', 'Vazirmatn', 'Segoe UI', Arial, sans-serif;
     height: 100dvh;
     overflow: hidden;
     display: flex;
@@ -469,6 +469,31 @@ function playDingDong() {
 // ── TTS announcement — chains languages set by admin ──
 let currentAudioLang = 'en';
 
+// Cache available voices; reload on voiceschanged (needed for iOS async load)
+let cachedVoices = [];
+let voicesReady = false;
+function loadVoices() {
+  const v = speechSynthesis.getVoices();
+  if (v.length) { cachedVoices = v; voicesReady = true; }
+}
+if (window.speechSynthesis) {
+  speechSynthesis.addEventListener('voiceschanged', () => { loadVoices(); });
+  loadVoices(); // try eagerly — works on desktop, no-op on iOS until voiceschanged
+}
+
+function hasVoiceForLang(lang) {
+  loadVoices(); // re-check in case voiceschanged already fired
+  if (!voicesReady) {
+    // Voices not loaded yet: safe to assume common langs exist, but NOT ml-IN
+    // (iOS has no Malayalam voice by default — speaking Malayalam text with English
+    //  voice produces only the digit, e.g. "7", which is worse than silence)
+    const prefix = lang.split('-')[0].toLowerCase();
+    return prefix !== 'ml';
+  }
+  const prefix = lang.split('-')[0].toLowerCase();
+  return cachedVoices.some(v => v.lang.toLowerCase().startsWith(prefix));
+}
+
 function announceToken(data) {
   if (!window.speechSynthesis) return;
   speechSynthesis.cancel();
@@ -498,10 +523,16 @@ function announceToken(data) {
       lang: 'hi-IN'
     });
   }
-  if (langs.includes('ml')) {
+  if (langs.includes('ml') && hasVoiceForLang('ml-IN')) {
     queue.push({
       text: nameML ? `ടോക്കൺ ${num}. ${nameML}. അകത്ത് വരൂ.` : `ടോക്കൺ ${num}. അകത്ത് വരൂ.`,
       lang: 'ml-IN'
+    });
+  }
+  if (langs.includes('fa') && hasVoiceForLang('fa-IR')) {
+    queue.push({
+      text: name ? `نوبت شماره ${num}. ${name}. بفرمایید.` : `نوبت شماره ${num}. بفرمایید.`,
+      lang: 'fa-IR'
     });
   }
 
@@ -511,7 +542,18 @@ function announceToken(data) {
     u.lang   = queue[i].lang;
     u.rate   = 0.88;
     u.volume = 1;
-    u.onend  = () => speakNext(i + 1);
+
+    // iOS: onend may never fire for unsupported voices — use timeout + onerror as safety net
+    const wordCount = queue[i].text.trim().split(/\s+/).length;
+    const timeoutMs = Math.max(4000, wordCount * 700) + 1500;
+    let advanced = false;
+    function advance() {
+      if (!advanced) { advanced = true; speakNext(i + 1); }
+    }
+    const timer = setTimeout(advance, timeoutMs);
+    u.onend  = () => { clearTimeout(timer); advance(); };
+    u.onerror = () => { clearTimeout(timer); advance(); };
+
     speechSynthesis.speak(u);
   }
   speakNext(0);

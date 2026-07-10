@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TokenQ — Smart Queue for Your Clinic</title>
-  <meta name="description" content="Free digital token display for small clinics. No monthly fees. Works on any TV. One-time setup.">
+  <title>TokenQ — سیستم هوشمند نوبت‌دهی برای کلینیک</title>
+  <meta name="description" content="نرم‌افزار رایگان نمایش نوبت برای کلینیک‌های کوچک. بدون اشتراک ماهانه. روی هر تلویزیونی کار می‌کند. راه‌اندازی یک‌بار.">
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -19,13 +20,13 @@
     }
 
     body {
-      font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+      font-family: 'Vazirmatn', 'Segoe UI', system-ui, sans-serif;
       color: var(--text);
       background: #fff;
       -webkit-text-size-adjust: 100%;
+      direction: rtl;
     }
 
-    /* Layout util */
     .container { max-width: 520px; margin: 0 auto; padding: 0 20px; }
 
     /* ── HERO ── */
@@ -42,29 +43,22 @@
       padding: 5px 18px;
       font-size: 12px;
       font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
+      letter-spacing: 1px;
       margin-bottom: 24px;
     }
     .hero h1 {
-      font-size: 40px;
+      font-size: 38px;
       font-weight: 900;
-      line-height: 1.1;
+      line-height: 1.3;
       margin-bottom: 16px;
     }
     .hero h1 span { color: #93c5fd; }
     .hero p {
       font-size: 18px;
       opacity: 0.8;
-      line-height: 1.6;
-      max-width: 360px;
+      line-height: 1.8;
+      max-width: 380px;
       margin: 0 auto 32px;
-    }
-    .hero-ml {
-      font-size: 16px;
-      opacity: 0.45;
-      margin-bottom: 36px;
-      font-style: italic;
     }
     .btn-demo {
       display: inline-block;
@@ -76,6 +70,7 @@
       border-radius: 100px;
       text-decoration: none;
       box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      font-family: 'Vazirmatn', sans-serif;
     }
 
     /* ── SECTION BASE ── */
@@ -84,8 +79,7 @@
       display: inline-block;
       font-size: 11px;
       font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
+      letter-spacing: 1px;
       padding: 4px 14px;
       border-radius: 100px;
       margin-bottom: 20px;
@@ -95,10 +89,10 @@
     .label-green { background: #dcfce7; color: var(--green); }
     .label-blue  { background: #dbeafe; color: var(--blue); }
 
-    h2 { font-size: 28px; font-weight: 800; line-height: 1.2; margin-bottom: 12px; }
+    h2 { font-size: 28px; font-weight: 800; line-height: 1.4; margin-bottom: 12px; }
     .body-text {
       font-size: 17px;
-      line-height: 1.65;
+      line-height: 1.9;
       color: #374151;
     }
 
@@ -115,9 +109,9 @@
     }
     .card-emoji { font-size: 36px; flex-shrink: 0; line-height: 1; }
     .card-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
-    .card-desc  { font-size: 14px; color: var(--muted); line-height: 1.5; }
+    .card-desc  { font-size: 14px; color: var(--muted); line-height: 1.7; }
 
-    /* ── BRIDGE (paper tokens) ── */
+    /* ── BRIDGE ── */
     .bridge {
       background: linear-gradient(135deg, #fffbeb, #fef9c3);
       border-radius: 20px;
@@ -127,7 +121,7 @@
     }
     .bridge .big-e { font-size: 64px; margin-bottom: 16px; }
     .bridge h3 { font-size: 22px; font-weight: 800; color: var(--amber); margin-bottom: 10px; }
-    .bridge p  { font-size: 16px; color: #92400e; line-height: 1.6; }
+    .bridge p  { font-size: 16px; color: #92400e; line-height: 1.8; }
     .bridge .gap-arrow { font-size: 28px; margin: 20px 0; opacity: 0.5; }
     .bridge .gap-label {
       font-size: 15px;
@@ -157,7 +151,7 @@
     }
     .step-text { padding-top: 6px; }
     .step-text strong { font-size: 16px; display: block; margin-bottom: 3px; }
-    .step-text span { font-size: 14px; color: var(--muted); line-height: 1.5; }
+    .step-text span { font-size: 14px; color: var(--muted); line-height: 1.7; }
 
     /* ── SCREENSHOTS ── */
     .screens-bg {
@@ -173,6 +167,7 @@
       overflow-x: auto;
       padding: 4px 20px 20px;
       scrollbar-width: none;
+      direction: ltr;
     }
     .screen-scroll::-webkit-scrollbar { display: none; }
     .screen-card { flex-shrink: 0; text-align: center; }
@@ -188,10 +183,9 @@
     .cost-table th {
       background: #f9fafb;
       padding: 10px 16px;
-      text-align: left;
+      text-align: right;
       font-size: 12px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
+      letter-spacing: 0.5px;
       color: var(--muted);
       border-bottom: 2px solid var(--border);
     }
@@ -200,12 +194,12 @@
       font-size: 15px;
       border-bottom: 1px solid var(--border);
       vertical-align: top;
+      text-align: right;
     }
     .cost-table td:last-child { font-weight: 700; }
     .cost-bad   { color: var(--red); }
     .cost-good  { color: var(--green); }
     .cost-muted { color: var(--muted); }
-
     .winner-row td { background: #f0fdf4; }
 
     /* ── PRICING ── */
@@ -246,7 +240,7 @@
     }
     .price-row:last-child { border-bottom: none; }
     .price-row .amount { font-weight: 800; color: #4ade80; }
-    .price-note { color: rgba(255,255,255,0.45); font-size: 13px; margin-top: 18px; line-height: 1.5; }
+    .price-note { color: rgba(255,255,255,0.45); font-size: 13px; margin-top: 18px; line-height: 1.8; }
 
     /* ── CTA ── */
     .cta-section {
@@ -254,20 +248,21 @@
       text-align: center;
     }
     .cta-section h2 { margin-bottom: 8px; }
-    .cta-section p  { color: var(--muted); font-size: 16px; margin-bottom: 32px; }
-    .btn-wa {
+    .cta-section p  { color: var(--muted); font-size: 16px; margin-bottom: 32px; line-height: 1.8; }
+    .btn-tg {
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      background: #25d366;
+      background: #0088cc;
       color: #fff;
       font-size: 17px;
       font-weight: 700;
       padding: 15px 32px;
       border-radius: 100px;
       text-decoration: none;
-      box-shadow: 0 4px 16px rgba(37,211,102,0.35);
+      box-shadow: 0 4px 16px rgba(0,136,204,0.35);
       margin-bottom: 16px;
+      font-family: 'Vazirmatn', sans-serif;
     }
     .btn-demo-2 {
       display: inline-flex;
@@ -280,6 +275,7 @@
       padding: 13px 28px;
       border-radius: 100px;
       text-decoration: none;
+      font-family: 'Vazirmatn', sans-serif;
     }
     .cta-btns { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 
@@ -290,78 +286,93 @@
       text-align: center;
       padding: 28px 20px;
       font-size: 13px;
-      line-height: 1.7;
+      line-height: 1.9;
     }
 
-    /* ── FLOATING WA BUTTON ── */
-    .wa-float {
+    /* ── FLOATING TELEGRAM BUTTON ── */
+    .tg-float {
       position: fixed;
       bottom: 24px;
-      right: 20px;
+      left: 20px;
       width: 56px; height: 56px;
-      background: #25d366;
+      background: #0088cc;
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 28px;
-      box-shadow: 0 4px 16px rgba(37,211,102,0.45);
+      font-size: 26px;
+      box-shadow: 0 4px 16px rgba(0,136,204,0.45);
       text-decoration: none;
       z-index: 100;
     }
-  </style>
-  <style>
-    .lang-bar { background: #f1f5f9; padding: 8px 20px; display: flex; justify-content: center; gap: 12px; font-size: 13px; }
-    .lang-bar a { color: var(--muted); text-decoration: none; padding: 4px 10px; border-radius: 6px; }
-    .lang-bar a.active { background: var(--blue); color: #fff; font-weight: 700; }
+
+    /* ── LANGUAGE SWITCHER ── */
+    .lang-bar {
+      background: #f1f5f9;
+      padding: 8px 20px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      font-size: 13px;
+    }
+    .lang-bar a {
+      color: var(--muted);
+      text-decoration: none;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+    .lang-bar a.active {
+      background: var(--blue);
+      color: #fff;
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
 
 <!-- ── LANGUAGE SWITCHER ── -->
 <div class="lang-bar">
-  <a href="/landing.html" class="active">English</a>
-  <a href="/landing-fa.html">فارسی</a>
+  <a href="/landing.html">English</a>
+  <a href="/landing-fa.html" class="active">فارسی</a>
 </div>
 
 <!-- ── HERO ── -->
 <div class="hero">
   <div class="container">
-    <span class="hero-kicker">For Kerala Clinics</span>
-    <h1>No more <span>calling names</span> in your clinic</h1>
-    <p>Digital token display for small clinics. Patients see their number on the TV. Doctor calls next from their phone.</p>
-    <p class="hero-ml">ക്ലിനിക്കിലെ ക്യൂ — ഇനി ഡിജിറ്റൽ ആയി</p>
-    <a href="https://clinic-token-display.onrender.com/r/DEMO" class="btn-demo">See Live Demo →</a>
+    <span class="hero-kicker">برای کلینیک‌های ایران</span>
+    <h1>دیگر نیازی به <span>صدا زدن بیماران</span> نیست</h1>
+    <p>سیستم نوبت‌دهی دیجیتال برای کلینیک‌های کوچک. بیماران شماره خود را روی تلویزیون می‌بینند. دکتر از داخل اتاق با گوشی‌اش نفر بعدی را فراخوانی می‌کند.</p>
+    <a href="https://clinic-token-display.onrender.com/r/DEMO" class="btn-demo">← دمو زنده را ببینید</a>
   </div>
 </div>
 
 <!-- ── THE PROBLEM ── -->
 <section>
   <div class="container">
-    <span class="section-label label-red">The Problem</span>
-    <h2>Every clinic has this problem</h2>
-    <p class="body-text">No token system means patients don't know their place. They crowd the door, interrupt consultations, and cause confusion.</p>
+    <span class="section-label label-red">مشکل</span>
+    <h2>هر کلینیکی این مشکل را دارد</h2>
+    <p class="body-text">بدون سیستم نوبت‌دهی، بیماران نمی‌دانند کجای صف هستند. جلوی در ازدحام می‌کنند، ویزیت را قطع می‌کنند و باعث سردرگمی می‌شوند.</p>
 
     <div class="problem-cards">
       <div class="problem-card">
         <div class="card-emoji">👥🚪</div>
         <div>
-          <div class="card-title">Patients crowd the door</div>
-          <div class="card-desc">Nobody knows if it's their turn. They hover right outside the consulting room — Should I go in? Should I wait?</div>
+          <div class="card-title">بیماران جلوی در جمع می‌شوند</div>
+          <div class="card-desc">کسی نمی‌داند نوبتش رسیده یا نه. همه جلوی اتاق دکتر می‌ایستند — آیا بروم داخل؟ آیا صبر کنم؟</div>
         </div>
       </div>
 
       <div class="problem-card">
         <div class="card-emoji">🩺👋</div>
         <div>
-          <div class="card-title">Doctor interrupted mid-consultation</div>
-          <div class="card-desc">Another patient walks in: "Doctor, am I next?" Focus broken. Consultation disrupted. Time wasted.</div>
+          <div class="card-title">دکتر وسط ویزیت مزاحمت می‌شود</div>
+          <div class="card-desc">یک بیمار دیگر می‌آید داخل: «دکتر، نوبت منه؟» تمرکز می‌شکند. ویزیت قطع می‌شود. وقت تلف می‌شود.</div>
         </div>
       </div>
 
       <div class="problem-card">
         <div class="card-emoji">🕡</div>
         <div>
-          <div class="card-title">Evening shift — receptionist gone</div>
-          <div class="card-desc">After 6:30 PM when the receptionist leaves, the doctor has to walk out and call names out loud. With two doctors — pure chaos.</div>
+          <div class="card-title">بعد از ساعت کاری — منشی رفته</div>
+          <div class="card-desc">وقتی منشی می‌رود، دکتر باید خودش برود بیرون و نام‌ها را بلند صدا کند. با دو دکتر — کاملاً آشفتگی.</div>
         </div>
       </div>
     </div>
@@ -371,42 +382,42 @@
 <!-- ── BRIDGE: Paper tokens ── -->
 <div class="bridge">
   <div class="big-e">🎫</div>
-  <h3>You already use paper tokens</h3>
-  <p>Many clinics hand out paper slips with numbers. It helps. But there's still one problem.</p>
+  <h3>شما از شماره کاغذی استفاده می‌کنید</h3>
+  <p>خیلی از کلینیک‌ها برگه‌های کاغذی با شماره می‌دهند. کمک می‌کند. اما هنوز یک مشکل هست.</p>
   <div class="gap-arrow">↓</div>
-  <span class="gap-label">Someone still has to call the name out loud</span>
+  <span class="gap-label">باز هم کسی باید بلند اسم بخواند</span>
   <p style="margin-top:16px; font-size:14px; color:#b45309;">
-    Paper tokens solve numbering — not the calling.<br>Doctor still walks out. Patients still crowd the door.
+    شماره کاغذی مشکل ترتیب را حل می‌کند — نه مشکل صدا زدن را.<br>دکتر هنوز باید بیاید بیرون. بیماران هنوز جلوی در جمع می‌شوند.
   </p>
 </div>
 
 <!-- ── SOLUTION ── -->
 <section>
   <div class="container">
-    <span class="section-label label-green">The Solution</span>
-    <h2>Token appears on the TV. Automatically.</h2>
-    <p class="body-text">TokenQ is a digital queue system. The TV screen shows who's being seen now and who's next. Doctor calls the next token from their phone — without leaving the room.</p>
+    <span class="section-label label-green">راه‌حل</span>
+    <h2>شماره نوبت روی تلویزیون نمایش داده می‌شود. خودکار.</h2>
+    <p class="body-text">TokenQ یک سیستم نوبت‌دهی دیجیتال است. صفحه تلویزیون نشان می‌دهد چه کسی الان در حال ویزیت است و نفر بعدی کیست. دکتر از گوشی خود نفر بعدی را فراخوانی می‌کند — بدون اینکه از اتاق بیاید بیرون.</p>
 
     <div class="steps">
       <div class="step-item">
-        <div class="step-num">1</div>
+        <div class="step-num">۱</div>
         <div class="step-text">
-          <strong>🎫 Patient gets a token</strong>
-          <span>Receptionist issues a token number when the patient arrives. Or patient self check-in.</span>
+          <strong>🎫 بیمار شماره نوبت می‌گیرد</strong>
+          <span>منشی هنگام ورود بیمار شماره نوبت می‌دهد. یا بیمار خودش نوبت ثبت می‌کند.</span>
         </div>
       </div>
       <div class="step-item">
-        <div class="step-num">2</div>
+        <div class="step-num">۲</div>
         <div class="step-text">
-          <strong>📱 Doctor taps "Call Next" on phone</strong>
-          <span>No need to walk out. Tap one button from inside the consulting room.</span>
+          <strong>📱 دکتر روی گوشی «بعدی» را می‌زند</strong>
+          <span>نیازی به آمدن بیرون نیست. یک دکمه از داخل اتاق ویزیت.</span>
         </div>
       </div>
       <div class="step-item">
-        <div class="step-num">3</div>
+        <div class="step-num">۳</div>
         <div class="step-text">
-          <strong>📺 Token shown on TV + voice announcement</strong>
-          <span>Patients in the waiting area see the number. English and Malayalam announcement plays automatically.</span>
+          <strong>📺 شماره روی تلویزیون + اعلام صوتی فارسی</strong>
+          <span>بیماران در سالن انتظار شماره را می‌بینند. اعلام صوتی به زبان فارسی و انگلیسی به صورت خودکار پخش می‌شود.</span>
         </div>
       </div>
     </div>
@@ -416,29 +427,29 @@
 <!-- ── SCREENSHOTS ── -->
 <div class="screens-bg">
   <div class="container">
-    <h2>Works on any TV &amp; any phone</h2>
-    <p class="body-text">No app to install. Open in any browser.</p>
+    <h2>روی هر تلویزیون و هر گوشی کار می‌کند</h2>
+    <p class="body-text">نیازی به نصب اپلیکیشن نیست. در هر مرورگری باز کنید.</p>
   </div>
   <div class="screen-scroll">
     <div class="screen-card">
-      <img src="/display-phone.png" alt="TV display showing current token">
-      <p>📺 TV Display</p>
+      <img src="/display-phone.png" alt="نمایش نوبت روی تلویزیون">
+      <p>📺 نمایش تلویزیون</p>
     </div>
     <div class="screen-card">
-      <img src="/admin-phone.png" alt="Doctor's admin screen">
-      <p>📱 Doctor's Phone</p>
+      <img src="/admin-phone.png" alt="صفحه مدیریت دکتر">
+      <p>📱 گوشی دکتر</p>
     </div>
     <div class="screen-card">
-      <img src="/admin-queue-list.png" alt="Queue list view">
-      <p>📋 Queue List</p>
+      <img src="/admin-queue-list.png" alt="لیست صف انتظار">
+      <p>📋 لیست نوبت‌ها</p>
     </div>
     <div class="screen-card">
-      <img src="/admin-urgent-issued.png" alt="Urgent token">
-      <p>⚡ Urgent Patient</p>
+      <img src="/admin-urgent-issued.png" alt="نوبت فوری">
+      <p>⚡ بیمار فوری</p>
     </div>
     <div class="screen-card">
-      <img src="/display-paused.png" alt="Queue paused display">
-      <p>⏸ Queue Paused</p>
+      <img src="/display-paused.png" alt="صف متوقف شده">
+      <p>⏸ صف متوقف</p>
     </div>
   </div>
 </div>
@@ -446,26 +457,26 @@
 <!-- ── COST COMPARISON ── -->
 <section>
   <div class="container">
-    <span class="section-label label-blue">Cost Comparison</span>
-    <h2>Why pay ₹4,800/month?</h2>
-    <p class="body-text">Other queue systems charge a monthly subscription. TokenQ software is free — you pay only once for setup.</p>
+    <span class="section-label label-blue">مقایسه هزینه</span>
+    <h2>چرا هر ماه هزینه بدهید؟</h2>
+    <p class="body-text">سیستم‌های دیگر اشتراک ماهانه گران می‌گیرند. نرم‌افزار TokenQ رایگان است — فقط یک بار برای راه‌اندازی وقت می‌گذارید.</p>
 
     <table class="cost-table">
       <thead>
-        <tr><th>Option</th><th>What you pay</th></tr>
+        <tr><th>گزینه</th><th>هزینه</th></tr>
       </thead>
       <tbody>
         <tr>
-          <td>Paper tokens (manual)</td>
-          <td class="cost-muted">₹0 — but wastes doctor's time daily</td>
+          <td>شماره کاغذی (دستی)</td>
+          <td class="cost-muted">رایگان — اما وقت دکتر را روزانه تلف می‌کند</td>
         </tr>
         <tr>
-          <td>Webprint.in &amp; similar</td>
-          <td class="cost-bad">₹4,800 / month<br><span style="font-size:13px; font-weight:400; color:#9ca3af;">= ₹57,600 per year</span></td>
+          <td>نرم‌افزارهای مدیریت نوبت</td>
+          <td class="cost-bad">اشتراک ماهانه گران<br><span style="font-size:13px; font-weight:400; color:#9ca3af;">هزینه‌ای که هر ماه تکرار می‌شود</span></td>
         </tr>
         <tr class="winner-row">
           <td><strong>TokenQ ✓</strong></td>
-          <td class="cost-good">100% FREE<br><span style="font-size:13px; font-weight:400;">software + configuration</span></td>
+          <td class="cost-good">۱۰۰٪ رایگان<br><span style="font-size:13px; font-weight:400;">نرم‌افزار + پیکربندی</span></td>
         </tr>
       </tbody>
     </table>
@@ -474,42 +485,42 @@
 
 <!-- ── PRICING ── -->
 <div class="pricing-bg">
-  <h2 style="color:#fff;">Simple, honest pricing</h2>
-  <p class="body-text">Software and configuration are completely free. You just need a TV screen and a smartphone.</p>
+  <h2 style="color:#fff;">قیمت‌گذاری ساده و شفاف</h2>
+  <p class="body-text">نرم‌افزار و پیکربندی کاملاً رایگان است. فقط یک تلویزیون و یک گوشی هوشمند لازم دارید.</p>
 
   <div class="price-card">
-    <div class="price-free">100% Free to Use</div>
+    <div class="price-free">۱۰۰٪ رایگان</div>
     <div class="price-row">
-      <span>Software</span>
-      <span class="amount">FREE</span>
+      <span>نرم‌افزار</span>
+      <span class="amount">رایگان</span>
     </div>
     <div class="price-row">
-      <span>Configuration &amp; setup</span>
-      <span class="amount">FREE</span>
+      <span>پیکربندی و راه‌اندازی</span>
+      <span class="amount">رایگان</span>
     </div>
     <div class="price-row">
-      <span>Monthly subscription</span>
-      <span style="color:#4ade80; font-weight:800;">₹0</span>
+      <span>اشتراک ماهانه</span>
+      <span style="color:#4ade80; font-weight:800;">۰ تومان</span>
     </div>
     <div class="price-row">
-      <span>You provide</span>
-      <span style="color:rgba(255,255,255,0.6); font-size:14px;">TV screen + phone</span>
+      <span>شما تهیه می‌کنید</span>
+      <span style="color:rgba(255,255,255,0.6); font-size:14px;">تلویزیون + گوشی</span>
     </div>
-    <p class="price-note">No hardware included. Clinic provides the TV and smartphone. Software and configuration at no charge.</p>
+    <p class="price-note">سخت‌افزار شامل نمی‌شود. کلینیک تلویزیون و گوشی هوشمند را تهیه می‌کند. نرم‌افزار و پیکربندی بدون هیچ هزینه‌ای.</p>
   </div>
 </div>
 
 <!-- ── CTA ── -->
 <div class="cta-section">
   <div class="container">
-    <h2>Ready to try it?</h2>
-    <p>See the live demo or WhatsApp us to schedule a free clinic visit</p>
+    <h2>آماده‌اید امتحان کنید؟</h2>
+    <p>دمو زنده را ببینید یا در تلگرام با ما تماس بگیرید تا بازدید رایگان از کلینیک را برنامه‌ریزی کنیم</p>
     <div class="cta-btns">
-      <a href="https://wa.me/91XXXXXXXXXX?text=Hi%2C%20I%20want%20to%20know%20more%20about%20TokenQ%20for%20my%20clinic" class="btn-wa">
-        <span>💬</span> WhatsApp Us
+      <a href="https://t.me/YOURTELEGRAM" class="btn-tg">
+        <span>✈️</span> پیام در تلگرام
       </a>
       <a href="https://clinic-token-display.onrender.com/r/DEMO" class="btn-demo-2">
-        <span>🎬</span> See Live Demo
+        <span>🎬</span> دمو زنده
       </a>
     </div>
   </div>
@@ -517,12 +528,12 @@
 
 <!-- ── FOOTER ── -->
 <footer>
-  <strong style="color:rgba(255,255,255,0.7);">TokenQ</strong> — Smart Queue Management for Small Clinics<br>
-  Made in Kerala 🌴 &nbsp;·&nbsp; Free software &nbsp;·&nbsp; One-time setup
+  <strong style="color:rgba(255,255,255,0.7);">TokenQ</strong> — مدیریت هوشمند نوبت برای کلینیک‌های کوچک<br>
+  نرم‌افزار رایگان &nbsp;·&nbsp; راه‌اندازی یک‌بار &nbsp;·&nbsp; بدون اشتراک ماهانه
 </footer>
 
-<!-- Floating WhatsApp button -->
-<a href="https://wa.me/91XXXXXXXXXX?text=Hi%2C%20I%20want%20to%20know%20more%20about%20TokenQ" class="wa-float" title="Chat on WhatsApp">💬</a>
+<!-- Floating Telegram button -->
+<a href="https://t.me/YOURTELEGRAM" class="tg-float" title="تماس در تلگرام">✈️</a>
 
 </body>
 </html>
